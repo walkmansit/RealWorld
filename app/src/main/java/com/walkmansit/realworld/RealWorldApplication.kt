@@ -8,7 +8,7 @@ import dagger.hilt.android.HiltAndroidApp
 class RealWorldApplication : Application() {
 
     override fun onCreate() {
-        Log.d("RealWorldApplication","onCreate")
+        Log.d("RealWorldApplication", "onCreate")
         super.onCreate()
     }
 }

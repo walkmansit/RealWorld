@@ -1,7 +1,6 @@
 package com.walkmansit.realworld.data.remote.response
 
 import com.google.gson.annotations.SerializedName
-import com.walkmansit.realworld.domain.model.Author
 import java.util.Date
 
 
@@ -10,6 +9,12 @@ data class ArticlesResponse(
 )
 
 data class SingleArticleResponse(
+    @SerializedName("slug")
+    val article: SingleArticle
+)
+
+
+data class SingleArticle(
     @SerializedName("slug")
     val slug: String,
     @SerializedName("title")
@@ -27,10 +32,10 @@ data class SingleArticleResponse(
     @SerializedName("favoritesCount")
     val favoritesCount: Int,
     @SerializedName("author")
-    val author: Author,
+    val author: AuthorResponse,
 )
 
-data class Author(
+data class AuthorResponse(
     @SerializedName("username")
     val username: String,
     @SerializedName("bio")

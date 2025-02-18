@@ -30,7 +30,7 @@ import com.walkmansit.realworld.common.TextFieldState
 fun PasswordField(
     password: TextFieldState,
     onPasswordChanged: (String) -> Unit,
-){
+) {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
 
@@ -57,8 +57,8 @@ fun PasswordField(
             val description = if (passwordVisible) "Hide password" else "Show password"
 
             // Toggle button to hide or display password
-            IconButton(onClick = { passwordVisible = !passwordVisible }){
-                Icon(imageVector  = image, description)
+            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                Icon(imageVector = image, description)
             }
         }
 

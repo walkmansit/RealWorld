@@ -1,33 +1,48 @@
 package com.walkmansit.realworld
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.walkmansit.realworld.domain.use_case.CheckAuthUseCase
+import com.walkmansit.realworld.domain.util.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.walkmansit.realworld.data.repository.UserPreferencesRepository
-import kotlinx.coroutines.flow.map
+
+data class SplashUiState(
+    val isLoading: Boolean = false,
+    val uiEvent: UiEvent = UiEvent.Undefined
+)
 
 @HiltViewModel
 class SplashScreenViewModel @Inject constructor(
-    private val userPreferencesRepository: UserPreferencesRepository
-) : ViewModel(){
-    private val _localUser = MutableStateFlow<UserAuth>(value = UserAuth(name = "asd", token = "dfsdf"))
-    val localUser: StateFlow<UserAuth> = _localUser.asStateFlow()
+    private val checkAuthUseCase: CheckAuthUseCase
+) : ViewModel() {
 
-    val userAuthFlow : Flow<UiEvent> = userPreferencesRepository.userPreferencesFlow.map { value: UserAuth ->
-        if (value.undefined) UiEvent.NavigateEvent(RwDestinations.REGISTRATION_ROUTE)
-        else UiEvent.SnackbarEvent("Root")
-        //if (value.undefined) UiEvents.NavigateEvent("Registration")
-        //else UiEvents.NavigateEvent("Root")
+    init {
+        viewModelScope.launch {
+            when (val authResult = checkAuthUseCase()) {
+                is Either.Fail -> {
+                    when (authResult.value) {
+                        is Either.Fail -> {
+                            _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.REGISTRATION_ROUTE)) }
+                        }
 
+                        is Either.Success -> {
+                            _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.LOGIN_ROUTE)) }
+                        }
+                    }
+                }
+
+                is Either.Success -> {
+                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
+                }
+            }
+        }
     }
-}
 
-data class UserAuth(
-    val name: String,
-    val token: String,
-    val undefined : Boolean = false
-)
+    private val _uiState = MutableStateFlow(SplashUiState())
+    val uiState = _uiState.asStateFlow()
+}

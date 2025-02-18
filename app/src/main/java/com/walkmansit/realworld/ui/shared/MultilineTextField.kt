@@ -1,5 +1,6 @@
 package com.walkmansit.realworld.ui.shared
 
+
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,28 +17,33 @@ import androidx.compose.ui.unit.dp
 import com.walkmansit.realworld.common.TextFieldState
 
 @Composable
-fun EmailField(
-    email: TextFieldState,
-    onEmailChanged: (String) -> Unit,
+fun MultilineTextField(
+    value: TextFieldState,
+    placeholderText: String,
+    minLines: Int = 3,
+    maxLines: Int = 5,
+    onValueChanged: (String) -> Unit,
 ) {
     Spacer(modifier = Modifier.height(32.dp))
 
     OutlinedTextField(
         modifier = Modifier.fillMaxWidth(),
-        value = email.text,
-        onValueChange = onEmailChanged,
+        value = value.text,
+        minLines = minLines,
+        maxLines = maxLines,
+        onValueChange = onValueChanged,
         placeholder = {
-            Text(text = "Email ")
+            Text(text = placeholderText)
         },
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next,
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Done,
         ),
-        isError = email.hasError()
+        isError = value.hasError()
     )
-    if (email.hasError()) {
+    if (value.hasError()) {
         Text(
-            text = email.error ?: "",
+            text = value.error ?: "",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.End,

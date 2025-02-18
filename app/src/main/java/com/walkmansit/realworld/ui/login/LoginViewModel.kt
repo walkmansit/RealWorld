@@ -7,7 +7,6 @@ import com.walkmansit.realworld.UiEvent
 import com.walkmansit.realworld.common.TextFieldState
 import com.walkmansit.realworld.domain.use_case.LoginUseCase
 import com.walkmansit.realworld.domain.util.Either
-import com.walkmansit.realworld.ui.registration.RegistrationIntent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,8 +35,8 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun onIntent(intent: LoginIntent){
-        when(intent){
+    fun onIntent(intent: LoginIntent) {
+        when (intent) {
             is LoginIntent.UpdateEmail -> updateEmail(intent.email)
             is LoginIntent.UpdatePassword -> updatePassword(intent.password)
             is LoginIntent.Submit -> loginUser()
@@ -53,7 +52,7 @@ class LoginViewModel @Inject constructor(
         _uiState.update { it.copy(password = TextFieldState(newValue)) }
     }
 
-    private fun loginUser(){
+    private fun loginUser() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
@@ -66,7 +65,7 @@ class LoginViewModel @Inject constructor(
 
             _uiState.update { it.copy(isLoading = false) }
 
-            when(loginResult){
+            when (loginResult) {
                 is Either.Fail -> {
                     _uiState.update {
                         it.copy(
@@ -75,14 +74,15 @@ class LoginViewModel @Inject constructor(
                         )
                     }
                 }
+
                 is Either.Success -> {
-                    //TODO navigate to root menu
+                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
                 }
             }
         }
     }
 
-    private fun redirectRegistration(){
+    private fun redirectRegistration() {
         _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.REGISTRATION_ROUTE)) }
     }
 }

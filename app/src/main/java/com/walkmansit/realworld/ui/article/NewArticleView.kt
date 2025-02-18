@@ -1,6 +1,5 @@
-package com.walkmansit.realworld.ui.login
+package com.walkmansit.realworld.ui.article
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,10 +10,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -22,10 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,19 +32,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.walkmansit.realworld.UiEvent
-import com.walkmansit.realworld.ui.shared.EmailField
-import com.walkmansit.realworld.ui.shared.PasswordField
+import com.walkmansit.realworld.ui.shared.MultilineTextField
+import com.walkmansit.realworld.ui.shared.RegularTextField
 import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
-fun LoginView(
+fun NewArticleView(
     modifier: Modifier = Modifier,
     navController: NavController,
-    viewModel: LoginViewModel = hiltViewModel(),
+    viewModel: NewArticleViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
-    var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
@@ -63,10 +57,6 @@ fun LoginView(
 
                 is UiEvent.NavigateEvent -> {
                     navController.navigate(event.uiEvent.route)
-//                    snackBarHostState.showSnackbar(
-//                        message = "Login Successful",
-//                        duration = SnackbarDuration.Short
-//                    )
                 }
 
                 is UiEvent.Undefined -> {}
@@ -78,7 +68,7 @@ fun LoginView(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackBarHostState) },
         floatingActionButton = {
-            SmallFloatingActionButton(onClick = { viewModel.onIntent(LoginIntent.Submit) }) {
+            FloatingActionButton(onClick = { viewModel.onIntent(NewArticleIntent.Submit) }) {
                 Icon(Icons.Filled.Done, "Submit")
             }
         }
@@ -95,48 +85,24 @@ fun LoginView(
             Spacer(modifier = Modifier.height(32.dp))
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Hello Again!",
+                text = "New article",
                 fontSize = 26.sp,
                 color = Color.Black,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "Welcome Back you've been missed",
-                fontSize = 19.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Light,
-                textAlign = TextAlign.Center
-            )
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            //Email
-            EmailField(uiState.email) {
-                viewModel.onIntent(LoginIntent.UpdateEmail(it))
+            RegularTextField(uiState.title, "Title") {
+                viewModel.onIntent(NewArticleIntent.UpdateTitleIntent(it))
             }
 
-            //Password
-            PasswordField(uiState.password) {
-                viewModel.onIntent(LoginIntent.UpdatePassword(it))
+            RegularTextField(uiState.description, "Description") {
+                viewModel.onIntent(NewArticleIntent.UpdateDescriptionIntent(it))
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            var enabled by rememberSaveable { mutableStateOf(true) }
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = enabled) {
-                        enabled = false
-                        viewModel.onIntent(LoginIntent.RedirectRegistration)
-                    },
-                text = "Create new account",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Blue,
-                textAlign = TextAlign.Start,
-            )
+            MultilineTextField(uiState.body, "Body") {
+                viewModel.onIntent(NewArticleIntent.UpdateBodyIntent(it))
+            }
 
         }
     }

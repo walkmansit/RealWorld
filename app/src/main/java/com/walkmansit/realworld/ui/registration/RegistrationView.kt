@@ -12,11 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -35,14 +31,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,7 +50,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun RegistrationView(
     modifier: Modifier = Modifier,
-    navController : NavController,
+    navController: NavController,
     viewModel: RegistrationViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
@@ -72,6 +64,7 @@ fun RegistrationView(
                         duration = SnackbarDuration.Short
                     )
                 }
+
                 is UiEvent.NavigateEvent -> {
                     navController.navigate(event.uiEvent.route)
 //                    snackBarHostState.showSnackbar(
@@ -79,7 +72,8 @@ fun RegistrationView(
 //                        duration = SnackbarDuration.Short
 //                    )
                 }
-                is UiEvent.Undefined -> { }
+
+                is UiEvent.Undefined -> {}
             }
         }
     }
@@ -89,7 +83,7 @@ fun RegistrationView(
         snackbarHost = { SnackbarHost(snackBarHostState) },
         floatingActionButton = {
             SmallFloatingActionButton(onClick = { viewModel.onIntent(RegistrationIntent.Submit) }) {
-                Icon(Icons.Filled.Done,"Submit")
+                Icon(Icons.Filled.Done, "Submit")
             }
         }
     ) { padding ->
@@ -121,23 +115,23 @@ fun RegistrationView(
             )
 
             //Username
-            UserNameField(uiState.username){
+            UserNameField(uiState.username, "Username ") {
                 viewModel.onIntent(RegistrationIntent.UpdateUserName(it))
             }
 
             //Email
-            EmailField(uiState.email){
+            EmailField(uiState.email) {
                 viewModel.onIntent(RegistrationIntent.UpdateEmail(it))
             }
 
             //Password
-            PasswordField(uiState.password){
+            PasswordField(uiState.password) {
                 viewModel.onIntent(RegistrationIntent.UpdatePassword(it))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            var enabled by rememberSaveable{ mutableStateOf(true)}
+            var enabled by rememberSaveable { mutableStateOf(true) }
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,8 +152,9 @@ fun RegistrationView(
 @Composable
 fun UserNameField(
     username: TextFieldState,
+    placeholderText: String,
     onUserNameChanged: (String) -> Unit,
-){
+) {
     Spacer(modifier = Modifier.height(32.dp))
 
     OutlinedTextField(
@@ -167,7 +162,7 @@ fun UserNameField(
         value = username.text,
         onValueChange = onUserNameChanged,
         placeholder = {
-            Text(text = "Username ")
+            Text(text = placeholderText)
         },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,

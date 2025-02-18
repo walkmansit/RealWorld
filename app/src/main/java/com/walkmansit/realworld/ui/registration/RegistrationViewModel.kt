@@ -7,7 +7,6 @@ import com.walkmansit.realworld.UiEvent
 import com.walkmansit.realworld.common.TextFieldState
 import com.walkmansit.realworld.domain.use_case.RegistrationUseCase
 import com.walkmansit.realworld.domain.util.Either
-import com.walkmansit.realworld.domain.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +26,7 @@ data class RegistrationUiState(
     val username: TextFieldState = TextFieldState(),
     val email: TextFieldState = TextFieldState(),
     val password: TextFieldState = TextFieldState(),
-    val isLoading : Boolean = false,
+    val isLoading: Boolean = false,
     val uiEvent: UiEvent = UiEvent.Undefined
 )
 
@@ -38,8 +37,8 @@ class RegistrationViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RegistrationUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun onIntent(intent: RegistrationIntent){
-        when(intent){
+    fun onIntent(intent: RegistrationIntent) {
+        when (intent) {
             is RegistrationIntent.UpdateUserName -> updateUserName(intent.username)
             is RegistrationIntent.UpdateEmail -> updateMail(intent.email)
             is RegistrationIntent.UpdatePassword -> updatePassword(intent.password)
@@ -48,25 +47,25 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
-    private fun updateUserName(newValue : String){
+    private fun updateUserName(newValue: String) {
         _uiState.update {
             it.copy(username = TextFieldState(newValue))
         }
     }
 
-    private fun updateMail(newValue : String){
+    private fun updateMail(newValue: String) {
         _uiState.update {
             it.copy(email = TextFieldState(newValue))
         }
     }
 
-    private fun updatePassword(newValue : String){
+    private fun updatePassword(newValue: String) {
         _uiState.update {
             it.copy(password = TextFieldState(newValue))
         }
     }
 
-    private fun registerUser(){
+    private fun registerUser() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
@@ -78,11 +77,12 @@ class RegistrationViewModel @Inject constructor(
 
             _uiState.update { it.copy(isLoading = false) }
 
-            when(regUserResponse){
-                is Either.Success->{
-                    _uiState.update { it.copy(uiEvent = UiEvent.SnackbarEvent("Reg successful")) }
+            when (regUserResponse) {
+                is Either.Success -> {
+                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
                 }
-                is Either.Fail->{
+
+                is Either.Fail -> {
                     _uiState.update {
                         it.copy(
                             username = it.username.copy(error = regUserResponse.value.usernameError),
@@ -95,7 +95,7 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
-    private fun redirectLogin(){
+    private fun redirectLogin() {
         _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.LOGIN_ROUTE)) }
     }
 }
