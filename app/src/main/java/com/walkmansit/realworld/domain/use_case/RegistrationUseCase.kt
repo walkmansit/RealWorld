@@ -28,11 +28,7 @@ class RegistrationUseCase @Inject constructor(
                 if (it is Either.Success) userPreferencesRepository.updateUser(it.value)
             }
         } else Either.fail(
-            RegistrationFailed(
-                usernameError = usernameError,
-                emailError = emailError,
-                passwordError = passwordError,
-            )
+            RegistrationFailed(usernameError, emailError, passwordError)
         )
 
     }

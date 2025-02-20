@@ -39,9 +39,9 @@ data class AuthorResponse(
     @SerializedName("username")
     val username: String,
     @SerializedName("bio")
-    val bio: String,
+    val bio: String?,
     @SerializedName("image")
-    val image: String,
+    val image: String?,
     @SerializedName("following")
-    val following: String,
+    val following: Boolean,
 )

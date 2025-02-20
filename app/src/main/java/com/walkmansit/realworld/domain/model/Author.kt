@@ -4,5 +4,5 @@ data class Author(
     val username: String,
     val bio: String,
     val image: String,
-    val following: String,
+    val following: Boolean,
 )

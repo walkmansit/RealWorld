@@ -32,7 +32,6 @@ inline fun <reified T> getErrorResponse(body: String) : T {
     )
 }
 
-
 fun AuthResponse.toDomain() = User(
     email = userResponse.email,
     token = userResponse.token,
@@ -103,8 +102,8 @@ fun SingleArticleResponse.toDomain() = Article(
 
 fun AuthorResponse.toDomain() = Author(
     username = username,
-    bio = bio,
-    image = image,
+    bio = bio ?: "",
+    image = image ?: "",
     following = following,
 )
 

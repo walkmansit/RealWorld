@@ -20,6 +20,6 @@ class LoginUseCase @Inject constructor(
             authRepository.login(UserLoginCredentials(email, password)).also {
                 if (it is Either.Success) userPreferencesRepository.updateUser(it.value)
             }
-        } else Either.fail(LoginFailed(emailError, passwordError))
+        } else Either.fail(LoginFailed(passwordError, emailError))
     }
 }
