@@ -9,7 +9,7 @@ data class ArticlesResponse(
 )
 
 data class SingleArticleResponse(
-    @SerializedName("slug")
+    @SerializedName("article")
     val article: SingleArticle
 )
 

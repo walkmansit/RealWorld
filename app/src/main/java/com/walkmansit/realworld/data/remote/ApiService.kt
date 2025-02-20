@@ -6,6 +6,7 @@ import com.walkmansit.realworld.data.remote.request.RegistrationRequest
 import com.walkmansit.realworld.data.remote.response.AuthResponse
 import com.walkmansit.realworld.data.remote.response.ProfileResponse
 import com.walkmansit.realworld.data.remote.response.SingleArticleResponse
+import com.walkmansit.realworld.data.remote.response.TagsResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -25,6 +26,10 @@ interface ApiService {
     suspend fun registerUser(
         @Body registerRequest: RegistrationRequest
     ): AuthResponse
+
+    //Tags
+    @GET("/api/tags")
+    suspend fun getTags(): TagsResponse
 
     //Profile
     @GET("/api/profiles/{username}")

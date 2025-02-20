@@ -10,6 +10,7 @@ import com.walkmansit.realworld.data.remote.response.AuthResponse
 import com.walkmansit.realworld.data.remote.response.AuthorResponse
 import com.walkmansit.realworld.data.remote.response.ProfileResponse
 import com.walkmansit.realworld.data.remote.response.SingleArticleResponse
+import com.walkmansit.realworld.data.remote.response.TagsResponse
 import com.walkmansit.realworld.data.repository.ErrorResponse
 import com.walkmansit.realworld.domain.model.Article
 import com.walkmansit.realworld.domain.model.Author
@@ -82,3 +83,5 @@ fun AuthorResponse.toDomain() = Author(
     image = image,
     following = following,
 )
+
+fun TagsResponse.toDomain() = tags

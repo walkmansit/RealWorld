@@ -14,6 +14,7 @@ class NewArticleUseCase @Inject constructor(
         title: String,
         description: String,
         body: String,
+        tags: List<String>,
     ): Either<NewArticleFailed, Article> {
 
         val titleError = if (title.isBlank()) "Title cannot be blank" else null
@@ -21,7 +22,7 @@ class NewArticleUseCase @Inject constructor(
         val bodyError = if (body.isBlank()) "Body cannot be blank" else null
 
         return if (titleError == null && descriptionError == null && bodyError == null) {
-            repository.createArticle(NewArticle(title, description, body))
+            repository.createArticle(NewArticle(title, description, body, tags))
         } else
             Either.fail(NewArticleFailed(titleError, descriptionError, bodyError))
     }

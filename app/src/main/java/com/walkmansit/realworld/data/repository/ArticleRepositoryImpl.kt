@@ -6,6 +6,7 @@ import com.walkmansit.realworld.data.toNetworkRequest
 import com.walkmansit.realworld.domain.model.Article
 import com.walkmansit.realworld.domain.model.NewArticle
 import com.walkmansit.realworld.domain.model.NewArticleFailed
+import com.walkmansit.realworld.domain.model.ProfileFailed
 import com.walkmansit.realworld.domain.repository.ArticleRepository
 import com.walkmansit.realworld.domain.util.Either
 import retrofit2.HttpException
@@ -22,6 +23,17 @@ class ArticleRepositoryImpl(
             Either.fail(NewArticleFailed(commonError = e.message.orEmpty()))
         } catch (e: HttpException) {
             Either.fail(NewArticleFailed(commonError = e.message.orEmpty()))
+        }
+    }
+
+    override suspend fun getTags(): Either<ProfileFailed, List<String>> {
+        return try {
+            val response = apiService.getTags()
+            Either.success(response.toDomain())
+        } catch (e: IOException) {
+            Either.fail(ProfileFailed(commonError = e.message.orEmpty()))
+        } catch (e: HttpException) {
+            Either.fail(ProfileFailed(commonError = e.message.orEmpty()))
         }
     }
 }
