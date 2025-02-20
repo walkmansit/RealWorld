@@ -1,5 +1,6 @@
-package com.walkmansit.realworld.data
+package com.walkmansit.realworld.data.util
 
+import com.google.gson.Gson
 import com.walkmansit.realworld.data.remote.request.AuthRequest
 import com.walkmansit.realworld.data.remote.request.NewArticleBody
 import com.walkmansit.realworld.data.remote.request.NewArticleRequest
@@ -8,18 +9,29 @@ import com.walkmansit.realworld.data.remote.request.UserAuthRequest
 import com.walkmansit.realworld.data.remote.request.UserRegistrationRequest
 import com.walkmansit.realworld.data.remote.response.AuthResponse
 import com.walkmansit.realworld.data.remote.response.AuthorResponse
+import com.walkmansit.realworld.data.remote.response.LoginErrorResponse
+import com.walkmansit.realworld.data.remote.response.NewArticleErrorResponse
 import com.walkmansit.realworld.data.remote.response.ProfileResponse
+import com.walkmansit.realworld.data.remote.response.RegistrationErrorResponse
 import com.walkmansit.realworld.data.remote.response.SingleArticleResponse
 import com.walkmansit.realworld.data.remote.response.TagsResponse
-import com.walkmansit.realworld.data.repository.ErrorResponse
 import com.walkmansit.realworld.domain.model.Article
 import com.walkmansit.realworld.domain.model.Author
+import com.walkmansit.realworld.domain.model.LoginFailed
 import com.walkmansit.realworld.domain.model.NewArticle
+import com.walkmansit.realworld.domain.model.NewArticleFailed
 import com.walkmansit.realworld.domain.model.Profile
 import com.walkmansit.realworld.domain.model.RegistrationFailed
 import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.model.UserLoginCredentials
 import com.walkmansit.realworld.domain.model.UserRegisterCredentials
+
+inline fun <reified T> getErrorResponse(body: String) : T {
+    return Gson().fromJson(
+        body ?: "", T::class.java
+    )
+}
+
 
 fun AuthResponse.toDomain() = User(
     email = userResponse.email,
@@ -51,9 +63,21 @@ fun ProfileResponse.toDomain() = Profile(
     following = profile.following,
 )
 
-fun ErrorResponse.toRegistrationFailed() = RegistrationFailed(
-    usernameError = if (type == "UserNameAlreadyTakenException") message else "",
-    emailError = if (type == "EmailAlreadyTakenException") message else "",
+fun RegistrationErrorResponse.toRegistrationFailed() = RegistrationFailed(
+    usernameError = errors.username.joinToString(),
+    emailError = errors.email.joinToString(),
+    passwordError = errors.password.joinToString(),
+)
+
+fun LoginErrorResponse.toLoginFailed() = LoginFailed(
+    emailError = errors.email.joinToString(),
+    passwordError = errors.password.joinToString(),
+)
+
+fun NewArticleErrorResponse.toNewArticleFailed() = NewArticleFailed(
+    titleError = errors.title.joinToString(),
+    descriptionError = errors.description.joinToString(),
+    bodyError = errors.body.joinToString(),
 )
 
 fun NewArticle.toNetworkRequest() = NewArticleRequest(

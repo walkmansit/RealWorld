@@ -20,7 +20,8 @@ class RegistrationUseCase @Inject constructor(
 
         val usernameError = if (username.isBlank()) "Username cannot be blank" else null
         val emailError = if (email.isBlank()) "Email cannot be blank" else null
-        val passwordError = if (password.isBlank()) "Password cannot be blank" else null
+        //val passwordError = if (password.isBlank()) "Password cannot be blank" else null
+        val passwordError: String? = null
 
         return if (usernameError == null && emailError == null && passwordError == null) {
             repository.register(UserRegisterCredentials(username, email, password)).also {

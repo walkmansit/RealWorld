@@ -1,11 +1,14 @@
 package com.walkmansit.realworld.data.repository
 
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import com.walkmansit.realworld.data.remote.ApiService
-import com.walkmansit.realworld.data.toDomain
-import com.walkmansit.realworld.data.toNetworkRequest
-import com.walkmansit.realworld.data.toRegistrationFailed
+import com.walkmansit.realworld.data.remote.response.LoginErrorResponse
+import com.walkmansit.realworld.data.remote.response.RegistrationErrorResponse
+import com.walkmansit.realworld.data.util.getErrorResponse
+import com.walkmansit.realworld.data.util.toDomain
+import com.walkmansit.realworld.data.util.toLoginFailed
+import com.walkmansit.realworld.data.util.toNetworkRequest
+import com.walkmansit.realworld.data.util.toRegistrationFailed
 import com.walkmansit.realworld.domain.model.LoginFailed
 import com.walkmansit.realworld.domain.model.Profile
 import com.walkmansit.realworld.domain.model.ProfileFailed
@@ -29,8 +32,8 @@ class AuthRepositoryImpl(
         } catch (e: IOException) {
             Either.fail(LoginFailed(commonError = e.message.orEmpty()))
         } catch (e: HttpException) {
-            //TODO map response error to domain error
-            Either.fail(LoginFailed(commonError = e.message.orEmpty()))
+            val errorResponse = getErrorResponse<LoginErrorResponse>(e.response()?.errorBody()?.string() ?: "")
+            Either.fail(errorResponse.toLoginFailed())
         }
     }
 
@@ -41,11 +44,7 @@ class AuthRepositoryImpl(
         } catch (e: IOException) {
             Either.fail(RegistrationFailed(commonError = e.message.orEmpty()))
         } catch (e: HttpException) {
-            //e.response().errorBody()?.string()
-            val body = e.response()?.errorBody()?.string() ?: ""
-            val errorResponse: ErrorResponse = Gson().fromJson(
-                body ?: "", ErrorResponse::class.java
-            )
+            val errorResponse = getErrorResponse<RegistrationErrorResponse>(e.response()?.errorBody()?.string() ?: "")
             Either.fail(errorResponse.toRegistrationFailed())
         }
 
@@ -61,19 +60,5 @@ class AuthRepositoryImpl(
             Either.fail(ProfileFailed(commonError = e.message.orEmpty()))
         }
     }
+
 }
-
-data class UserAuthRequest(
-    @SerializedName("email")
-    val email: String,
-    @SerializedName("password")
-    val password: String,
-)
-
-data class ErrorResponse(
-    val status: String,
-    @SerializedName("status_code")
-    val statusCode: String,
-    val type: String,
-    val message: String,
-)
