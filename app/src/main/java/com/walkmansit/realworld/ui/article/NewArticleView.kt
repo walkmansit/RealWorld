@@ -2,12 +2,9 @@ package com.walkmansit.realworld.ui.article
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -27,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -35,11 +30,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -65,19 +57,23 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.walkmansit.realworld.UiEvent
+import com.walkmansit.realworld.domain.model.Tag
 import com.walkmansit.realworld.ui.shared.MultilineTextField
 import com.walkmansit.realworld.ui.shared.RegularTextField
+import com.walkmansit.realworld.ui.shared.TagsComponent
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.walkmansit.realworld.ui.shared.RwScaffold as RwScaffold1
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewArticleView(
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navController: NavController = rememberNavController(),
     viewModel: NewArticleViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
@@ -105,14 +101,16 @@ fun NewArticleView(
         }
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackBarHostState) },
-        floatingActionButton = {
+    RwScaffold1(
+        title = "New Article",
+        upAvailable = navController.previousBackStackEntry != null,
+        onUpClicked = { navController.popBackStack() },
+        snackBarHostState = snackBarHostState,
+        fab = {
             FloatingActionButton(onClick = { viewModel.onIntent(NewArticleIntent.Submit) }) {
                 Icon(Icons.Filled.Done, "Submit")
             }
-        }
+        },
     ) { padding ->
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -236,87 +234,6 @@ fun NewArticleView(
         }
     }
 
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun TagsComponent(
-    tags: List<Tag>,
-    showSearch: Boolean,
-    onDelete: (tag: Tag) -> Unit,
-    onEdit: () -> Unit,
-){
-    FlowRow(
-        maxLines = 2,
-        horizontalArrangement = Arrangement.Start, // Arrangement.spacedBy(2.dp)
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = Modifier
-            .padding(2.dp)
-    ) {
-        tags.forEach { tag ->
-            TextChipWithIcon(tag, onDelete)
-        }
-        if (showSearch) {
-            TextChipEdit("Edit", onEdit)
-        }
-    }
-}
-
-@Composable
-fun TextChipWithIcon(
-    tag: Tag,
-    onDelete: (tag: Tag) -> Unit,
-) {
-    val shape = CircleShape
-    Row(
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .padding(
-                vertical = 2.dp,
-                horizontal = 2.dp
-            )
-            .border(
-                width = 1.dp,
-                color = Color.LightGray,
-                shape = shape
-            )
-            .background(
-                color = White,
-                shape = shape
-            )
-            .clip(shape = shape)
-            .padding(2.dp)
-    ) {
-        Text(
-            modifier = Modifier
-                .padding(start = 16.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            text = tag.value,
-            color = Color.Black
-        )
-        IconButton(onClick = { onDelete(tag) }) {
-            Icon(imageVector = Icons.Filled.Done, "delete tag")
-        }
-    }
-}
-
-@Composable
-fun TextChipEdit(
-    text: String,
-    onEdit: () -> Unit,
-) {
-    Button(onClick = onEdit) {
-        Text(
-
-            modifier = Modifier
-                .padding(start = 8.dp, end = 8.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            text = text,
-            color = Color.White
-        )
-
-    }
 }
 
 

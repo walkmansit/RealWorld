@@ -5,7 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.walkmansit.realworld.RwDestinations
 import com.walkmansit.realworld.UiEvent
 import com.walkmansit.realworld.common.TextFieldState
-import com.walkmansit.realworld.domain.repository.ArticleRepository
+import com.walkmansit.realworld.domain.model.Tag
+import com.walkmansit.realworld.domain.use_case.GetTagsUseCase
 import com.walkmansit.realworld.domain.use_case.NewArticleUseCase
 import com.walkmansit.realworld.domain.util.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,15 +42,10 @@ data class NewArticleUiState(
     val uiEvent: UiEvent = UiEvent.Undefined
 )
 
-data class Tag(
-    val id: Int,
-    val value: String,
-)
-
 @HiltViewModel
 class NewArticleViewModel @Inject constructor(
     private val newArticleUseCase: NewArticleUseCase,
-    private val repository: ArticleRepository,
+    private val getTagsUseCase: GetTagsUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewArticleUiState())
@@ -150,7 +146,7 @@ class NewArticleViewModel @Inject constructor(
 
     private fun fetchTags(idxOffset: Int){
         viewModelScope.launch {
-            val tagsRes = repository.getTags()
+            val tagsRes = getTagsUseCase()
             if(tagsRes is Either.Success){
                 _allTagsShadow = tagsRes.value
                     .mapIndexed { index, s -> Tag(index + idxOffset, s).also { tagIdx = index + idxOffset  } }

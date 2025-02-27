@@ -13,34 +13,41 @@ class ArticlePagingSource(
 ) : PagingSource<Int, Article>() {
 
     companion object {
-        const val PAGE_SIZE = 20
-        private const val INITIAL_LOAD_SIZE = 0
+        const val FEED_PAGE_SIZE = 5
+        const val STARTING_PAGE_INDEX = 0
+
     }
 
     override fun getRefreshKey(state: PagingState<Int, Article>): Int? {
-        return null
+        return state.anchorPosition?.let { anchorPosition ->
+            state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
+                ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
+        }
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Article> {
-        val position = params.key ?: INITIAL_LOAD_SIZE
-        val offset = if (params.key != null) ((position - 1) * PAGE_SIZE) else INITIAL_LOAD_SIZE
+        val position = params.key ?: STARTING_PAGE_INDEX
+
+        filter.limit = params.loadSize
+        filter.offset = position
 
         return when(val resp = getArticlesUseCase(filter)){
             is Either.Success -> {
                 val nextKey = if (resp.value.isEmpty()) {
                     null
                 } else {
-                    position + (params.loadSize / PAGE_SIZE)
+                    position + resp.value.size
                 }
 
                 LoadResult.Page(
                     resp.value,
-                    prevKey = null,
+                    prevKey = if (position == STARTING_PAGE_INDEX) null else position - 1,
                     nextKey = nextKey,
                 )
             }
             is Either.Fail -> LoadResult.Error(Exception())
         }
     }
+
 
 }

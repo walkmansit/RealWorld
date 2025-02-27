@@ -7,12 +7,14 @@ import com.walkmansit.realworld.data.remote.request.NewArticleRequest
 import com.walkmansit.realworld.data.remote.request.RegistrationRequest
 import com.walkmansit.realworld.data.remote.request.UserAuthRequest
 import com.walkmansit.realworld.data.remote.request.UserRegistrationRequest
+import com.walkmansit.realworld.data.remote.response.ArticlesResponse
 import com.walkmansit.realworld.data.remote.response.AuthResponse
 import com.walkmansit.realworld.data.remote.response.AuthorResponse
 import com.walkmansit.realworld.data.remote.response.LoginErrorResponse
 import com.walkmansit.realworld.data.remote.response.NewArticleErrorResponse
 import com.walkmansit.realworld.data.remote.response.ProfileResponse
 import com.walkmansit.realworld.data.remote.response.RegistrationErrorResponse
+import com.walkmansit.realworld.data.remote.response.SingleArticle
 import com.walkmansit.realworld.data.remote.response.SingleArticleResponse
 import com.walkmansit.realworld.data.remote.response.TagsResponse
 import com.walkmansit.realworld.domain.model.Article
@@ -88,10 +90,25 @@ fun NewArticle.toNetworkRequest() = NewArticleRequest(
     )
 )
 
+fun SingleArticle.toDomain() = Article(
+    slug = slug,
+    title = title,
+    description = description,
+    body = body,
+    tagList = tagList,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+    favorited = favorited,
+    favoritesCount = favoritesCount,
+    author = author.toDomain(),
+)
+
+
 fun SingleArticleResponse.toDomain() = Article(
     slug = article.slug,
     title = article.title,
     description = article.description,
+    body = article.body,
     tagList = article.tagList,
     createdAt = article.createdAt,
     updatedAt = article.updatedAt,
@@ -106,5 +123,7 @@ fun AuthorResponse.toDomain() = Author(
     image = image ?: "",
     following = following,
 )
+fun ArticlesResponse.toDomain() : List<Article> =
+    articles.map{ it.toDomain() }
 
 fun TagsResponse.toDomain() = tags

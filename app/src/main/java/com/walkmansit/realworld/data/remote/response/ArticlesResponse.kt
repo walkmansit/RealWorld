@@ -5,14 +5,14 @@ import java.util.Date
 
 
 data class ArticlesResponse(
-    val articles: List<SingleArticleResponse>
+    @SerializedName("articles")
+    val articles: List<SingleArticle>
 )
 
 data class SingleArticleResponse(
     @SerializedName("article")
     val article: SingleArticle
 )
-
 
 data class SingleArticle(
     @SerializedName("slug")
@@ -21,6 +21,8 @@ data class SingleArticle(
     val title: String,
     @SerializedName("description")
     val description: String,
+    @SerializedName("body")
+    val body: String?,
     @SerializedName("tagList")
     val tagList: List<String>,
     @SerializedName("createdAt")

@@ -15,10 +15,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,52 +37,52 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.walkmansit.realworld.UiEvent
+import androidx.navigation.compose.rememberNavController
 import com.walkmansit.realworld.common.TextFieldState
 import com.walkmansit.realworld.ui.shared.EmailField
 import com.walkmansit.realworld.ui.shared.PasswordField
+import com.walkmansit.realworld.ui.shared.RwScaffold
 import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
 fun RegistrationView(
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navController: NavController = rememberNavController(),
+    navigateLogin: () -> Unit,
+    navigateFeed: (String) -> Unit,
     viewModel: RegistrationViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
 
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
-            when (event.uiEvent) {
-                is UiEvent.SnackbarEvent -> {
-                    snackBarHostState.showSnackbar(
-                        message = event.uiEvent.message,
-                        duration = SnackbarDuration.Short
-                    )
+            when (event.navEvent) {
+                is RegNavigationEvent.RedirectLogin ->
+                {
+                    navigateLogin()
+                    viewModel.onIntent(RegistrationIntent.RedirectComplete)
                 }
-
-                is UiEvent.NavigateEvent -> {
-                    navController.navigate(event.uiEvent.route)
-//                    snackBarHostState.showSnackbar(
-//                        message = "Register Successful",
-//                        duration = SnackbarDuration.Short
-//                    )
+                is RegNavigationEvent.RedirectFeed ->
+                {
+                    navigateFeed(event.navEvent.username)
+                    viewModel.onIntent(RegistrationIntent.RedirectComplete)
                 }
-
-                is UiEvent.Undefined -> {}
+                is RegNavigationEvent.Undefined -> { }
             }
         }
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackBarHostState) },
-        floatingActionButton = {
+    RwScaffold(
+        title = "",
+        upAvailable = navController.previousBackStackEntry != null,
+        onUpClicked = { navController.popBackStack() },
+        snackBarHostState = snackBarHostState,
+        fab = {
             SmallFloatingActionButton(onClick = { viewModel.onIntent(RegistrationIntent.Submit) }) {
                 Icon(Icons.Filled.Done, "Submit")
             }
-        }
+        },
     ) { padding ->
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

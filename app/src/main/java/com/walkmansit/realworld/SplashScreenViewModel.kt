@@ -13,13 +13,23 @@ import javax.inject.Inject
 
 data class SplashUiState(
     val isLoading: Boolean = false,
-    val uiEvent: UiEvent = UiEvent.Undefined
+    val navEvent: SplashNavigationEvent = SplashNavigationEvent.Undefined
 )
+
+sealed class SplashNavigationEvent {
+    data object Undefined : SplashNavigationEvent()
+    data class RedirectFeed(val username: String) : SplashNavigationEvent()
+    data object RedirectLogin : SplashNavigationEvent()
+    data object RedirectRegistration : SplashNavigationEvent()
+}
 
 @HiltViewModel
 class SplashScreenViewModel @Inject constructor(
     private val checkAuthUseCase: CheckAuthUseCase
 ) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(SplashUiState())
+    val uiState = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -27,22 +37,23 @@ class SplashScreenViewModel @Inject constructor(
                 is Either.Fail -> {
                     when (authResult.value) {
                         is Either.Fail -> {
-                            _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.REGISTRATION_ROUTE)) }
+                            _uiState.update { it.copy(navEvent = SplashNavigationEvent.RedirectRegistration) }
                         }
 
                         is Either.Success -> {
-                            _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.LOGIN_ROUTE)) }
+                            _uiState.update { it.copy(navEvent = SplashNavigationEvent.RedirectLogin) }
                         }
                     }
                 }
 
                 is Either.Success -> {
-                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
+                    _uiState.update { it.copy(navEvent = SplashNavigationEvent.RedirectFeed(authResult.value.username)) }
                 }
             }
         }
     }
 
-    private val _uiState = MutableStateFlow(SplashUiState())
-    val uiState = _uiState.asStateFlow()
+    fun consumeNavEvent(){
+        _uiState.update { it.copy(navEvent = SplashNavigationEvent.Undefined) }
+    }
 }

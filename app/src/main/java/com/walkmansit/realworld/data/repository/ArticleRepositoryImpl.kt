@@ -7,9 +7,11 @@ import com.walkmansit.realworld.data.util.toDomain
 import com.walkmansit.realworld.data.util.toNetworkRequest
 import com.walkmansit.realworld.data.util.toNewArticleFailed
 import com.walkmansit.realworld.domain.model.Article
+import com.walkmansit.realworld.domain.model.ArticleFilterType
+import com.walkmansit.realworld.domain.model.ArticlesFilter
 import com.walkmansit.realworld.domain.model.NewArticle
 import com.walkmansit.realworld.domain.model.NewArticleFailed
-import com.walkmansit.realworld.domain.model.ProfileFailed
+import com.walkmansit.realworld.domain.model.RequestFailed
 import com.walkmansit.realworld.domain.repository.ArticleRepository
 import com.walkmansit.realworld.domain.util.Either
 import retrofit2.HttpException
@@ -18,6 +20,54 @@ import java.io.IOException
 class ArticleRepositoryImpl(
     private val apiService: ApiService
 ) : ArticleRepository {
+
+    override suspend fun getArticle(slug: String): Either<RequestFailed, Article> {
+        return try {
+            val response = apiService.getArticle(slug)
+            Either.success(response.toDomain())
+        } catch (e: IOException) {
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
+        } catch (e: HttpException) {
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
+        }
+    }
+
+
+    override suspend fun getArticles(filter: ArticlesFilter): Either<RequestFailed, List<Article>> {
+        return try {
+            val response = if(filter.filterType != ArticleFilterType.Feed)
+                apiService.getArticles(
+                    filter.tag,
+                    filter.author,
+                    filter.favorited,
+                    filter.limit,
+                    filter.offset
+                )
+            else
+                apiService.getArticlesFeed(
+                    filter.limit,
+                    filter.offset
+                )
+
+            Either.success(response.toDomain())
+        } catch (e: IOException) {
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
+        } catch (e: HttpException) {
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
+        }
+    }
+
+    override suspend fun getArticlesFeed(filter: ArticlesFilter): Either<RequestFailed, List<Article>> {
+        return try {
+            val response = apiService.getArticlesFeed(filter.limit, filter.offset)
+            Either.success(response.toDomain())
+        } catch (e: IOException) {
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
+        } catch (e: HttpException) {
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
+        }
+    }
+
     override suspend fun createArticle(newArticle: NewArticle): Either<NewArticleFailed, Article> {
         return try {
             val response = apiService.createArticle(newArticle.toNetworkRequest())
@@ -30,14 +80,14 @@ class ArticleRepositoryImpl(
         }
     }
 
-    override suspend fun getTags(): Either<ProfileFailed, List<String>> {
+    override suspend fun getTags(): Either<RequestFailed, List<String>> {
         return try {
             val response = apiService.getTags()
             Either.success(response.toDomain())
         } catch (e: IOException) {
-            Either.fail(ProfileFailed(commonError = e.message.orEmpty()))
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
         } catch (e: HttpException) {
-            Either.fail(ProfileFailed(commonError = e.message.orEmpty()))
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
         }
     }
 }

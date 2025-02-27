@@ -2,8 +2,6 @@ package com.walkmansit.realworld.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.walkmansit.realworld.RwDestinations
-import com.walkmansit.realworld.UiEvent
 import com.walkmansit.realworld.common.TextFieldState
 import com.walkmansit.realworld.domain.use_case.LoginUseCase
 import com.walkmansit.realworld.domain.util.Either
@@ -18,7 +16,7 @@ data class LoginUiState(
     val email: TextFieldState = TextFieldState(),
     val password: TextFieldState = TextFieldState(),
     val isLoading: Boolean = false,
-    val uiEvent: UiEvent = UiEvent.Undefined,
+    val navEvent: LoginNavigationEvent = LoginNavigationEvent.Undefined,
 )
 
 sealed interface LoginIntent {
@@ -26,6 +24,14 @@ sealed interface LoginIntent {
     data class UpdatePassword(val password: String) : LoginIntent
     data object Submit : LoginIntent
     data object RedirectRegistration : LoginIntent
+    data object RedirectComplete : LoginIntent
+}
+
+sealed class LoginNavigationEvent {
+    data object Undefined : LoginNavigationEvent()
+    data class RedirectFeed(val username: String) : LoginNavigationEvent()
+    data object RedirectRegistration : LoginNavigationEvent()
+
 }
 
 @HiltViewModel
@@ -41,6 +47,7 @@ class LoginViewModel @Inject constructor(
             is LoginIntent.UpdatePassword -> updatePassword(intent.password)
             is LoginIntent.Submit -> loginUser()
             is LoginIntent.RedirectRegistration -> redirectRegistration()
+            is LoginIntent.RedirectComplete -> redirectComplete()
         }
     }
 
@@ -76,13 +83,19 @@ class LoginViewModel @Inject constructor(
                 }
 
                 is Either.Success -> {
-                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
+                    _uiState.update {
+                        it.copy(navEvent = LoginNavigationEvent.RedirectFeed(loginResult.value.username))
+                    }
                 }
             }
         }
     }
 
     private fun redirectRegistration() {
-        _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.REGISTRATION_ROUTE)) }
+        _uiState.update { it.copy(navEvent = LoginNavigationEvent.RedirectRegistration) }
+    }
+
+    private fun redirectComplete() {
+        _uiState.update { it.copy(navEvent = LoginNavigationEvent.Undefined) }
     }
 }

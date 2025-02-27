@@ -1,69 +1,104 @@
 package com.walkmansit.realworld.ui.feed
 
+import android.util.Log
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.walkmansit.realworld.UiEvent
+import androidx.navigation.compose.rememberNavController
+import com.walkmansit.realworld.domain.model.ArticleFilterType
+import com.walkmansit.realworld.ui.article.PaginatedLazyColumn
+import com.walkmansit.realworld.ui.feed.MAP.FILTER_MAPPING
 import kotlinx.coroutines.flow.collectLatest
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedView(
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navController: NavController = rememberNavController(),
+    navigateArticle: (String) -> Unit,
+    navigateNewArticle: () -> Unit,
     viewModel: FeedViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
 
+    Log.d("FeedView", "FeedView recomposition")
+
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
-            when (event.uiEvent) {
-                is UiEvent.SnackbarEvent -> {
-                    snackBarHostState.showSnackbar(
-                        message = event.uiEvent.message,
-                        duration = SnackbarDuration.Short
-                    )
+            when (event.navEvent) {
+                is FeedNavigationEvent.RedirectArticle ->
+                {
+                    navigateArticle(event.navEvent.slug)
+                    viewModel.onIntent(FeedIntent.RedirectComplete)
                 }
-
-                is UiEvent.NavigateEvent -> {
-                    navController.navigate(event.uiEvent.route)
+                is FeedNavigationEvent.RedirectNewArticle ->
+                {
+                    navigateNewArticle()
+                    viewModel.onIntent(FeedIntent.RedirectComplete)
                 }
-
-                is UiEvent.Undefined -> {}
+                is FeedNavigationEvent.Undefined -> { }
             }
         }
     }
 
+
+    // State to track the scroll position
+//    val listState = rememberLazyListState()
+    // Coroutine scope for handling background operations like loading data
+//    val coroutineScope = rememberCoroutineScope()
+    // State to track if more items are being loaded
+//    var isLoading by remember { mutableStateOf(false) }
+    // Function to simulate loading more items (with a delay)
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                colors = topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                ),
+                title = {
+                    ArticleFilterMenu(
+                        modifier,
+                        uiState.selectedFilter
+                    ) { viewModel.onIntent(FeedIntent.ChangeFilter(it)) }
+
+                }
+            )
+        },
         snackbarHost = { SnackbarHost(snackBarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = { viewModel.onIntent(FeedIntent.RedirectNewArticle) }) {
@@ -71,25 +106,64 @@ fun FeedView(
             }
         }
     ) { padding ->
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "Feed list",
-                fontSize = 26.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
+        Box(modifier = Modifier.padding(padding)) {
+            Column {
+                PaginatedLazyColumn(
+                    modifier,
+                    viewModel.articlesResult,
+                    onArticleClick = {  article ->
+                        viewModel.onIntent(FeedIntent.RedirectArticle(article.slug))
+                    },
+                    {}
+//                    listState = listState,
+//                    isLoading = isLoading
+                )
+            }
         }
     }
+}
 
+@Composable
+fun ArticleFilterMenu(
+    modifier: Modifier,
+    selectedFilter: ArticleFilterType,
+    onChangeFilter: (ArticleFilterType) -> Unit,
+){
+
+    var expanded by remember { mutableStateOf(false) }
+    Box(
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(Icons.Filled.ArrowDropDown, contentDescription = "More options")
+            }
+            Text(FILTER_MAPPING[selectedFilter]!!)
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            ArticleFilterType.entries.toTypedArray().onEach {
+                DropdownMenuItem(
+                    text = { Text(FILTER_MAPPING[it]!!) },
+                    onClick = {
+                        onChangeFilter(it)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+object MAP {
+    val FILTER_MAPPING: Map<ArticleFilterType, String> = mapOf(
+        ArticleFilterType.MyArticles to "My Articles",
+        ArticleFilterType.Feed to "Feed",
+        ArticleFilterType.Explore to "Explore",
+    )
 }

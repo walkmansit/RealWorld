@@ -2,8 +2,6 @@ package com.walkmansit.realworld.ui.registration
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.walkmansit.realworld.RwDestinations
-import com.walkmansit.realworld.UiEvent
 import com.walkmansit.realworld.common.TextFieldState
 import com.walkmansit.realworld.domain.use_case.RegistrationUseCase
 import com.walkmansit.realworld.domain.util.Either
@@ -20,6 +18,7 @@ sealed interface RegistrationIntent {
     data class UpdatePassword(val password: String) : RegistrationIntent
     data object Submit : RegistrationIntent
     data object RedirectLogin : RegistrationIntent
+    data object RedirectComplete : RegistrationIntent
 }
 
 data class RegistrationUiState(
@@ -27,8 +26,14 @@ data class RegistrationUiState(
     val email: TextFieldState = TextFieldState(),
     val password: TextFieldState = TextFieldState(),
     val isLoading: Boolean = false,
-    val uiEvent: UiEvent = UiEvent.Undefined
+    val navEvent: RegNavigationEvent = RegNavigationEvent.Undefined
 )
+
+sealed class RegNavigationEvent {
+    data object Undefined : RegNavigationEvent()
+    data class RedirectFeed(val username: String) : RegNavigationEvent()
+    data object RedirectLogin : RegNavigationEvent()
+}
 
 @HiltViewModel
 class RegistrationViewModel @Inject constructor(
@@ -44,6 +49,7 @@ class RegistrationViewModel @Inject constructor(
             is RegistrationIntent.UpdatePassword -> updatePassword(intent.password)
             is RegistrationIntent.Submit -> registerUser()
             is RegistrationIntent.RedirectLogin -> redirectLogin()
+            is RegistrationIntent.RedirectComplete -> redirectComplete()
         }
     }
 
@@ -79,7 +85,7 @@ class RegistrationViewModel @Inject constructor(
 
             when (regUserResponse) {
                 is Either.Success -> {
-                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
+                    _uiState.update { it.copy(navEvent = RegNavigationEvent.RedirectFeed(regUserResponse.value.username)) }
                 }
 
                 is Either.Fail -> {
@@ -96,6 +102,10 @@ class RegistrationViewModel @Inject constructor(
     }
 
     private fun redirectLogin() {
-        _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.LOGIN_ROUTE)) }
+        _uiState.update { it.copy(navEvent = RegNavigationEvent.RedirectLogin) }
+    }
+
+    private fun redirectComplete() {
+        _uiState.update { it.copy(navEvent = RegNavigationEvent.Undefined) }
     }
 }

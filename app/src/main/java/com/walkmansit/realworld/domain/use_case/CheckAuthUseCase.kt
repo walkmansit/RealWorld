@@ -1,7 +1,7 @@
 package com.walkmansit.realworld.domain.use_case
 
 import com.walkmansit.realworld.domain.model.EmptyUser
-import com.walkmansit.realworld.domain.model.ProfileFailed
+import com.walkmansit.realworld.domain.model.RequestFailed
 import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.repository.AuthRepository
 import com.walkmansit.realworld.domain.repository.UserPreferencesRepository
@@ -14,7 +14,7 @@ class CheckAuthUseCase @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
 ) {
 
-    suspend operator fun invoke(): Either<Either<EmptyUser, ProfileFailed>, User> {
+    suspend operator fun invoke(): Either<Either<EmptyUser, RequestFailed>, User> {
         when (val savedUser = userPreferencesRepository.userFlow.first()) {
             is Either.Fail -> {
                 return Either.fail(savedUser)

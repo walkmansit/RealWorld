@@ -1,6 +1,5 @@
 package com.walkmansit.realworld.data.repository
 
-import com.google.gson.Gson
 import com.walkmansit.realworld.data.remote.ApiService
 import com.walkmansit.realworld.data.remote.response.LoginErrorResponse
 import com.walkmansit.realworld.data.remote.response.RegistrationErrorResponse
@@ -11,8 +10,8 @@ import com.walkmansit.realworld.data.util.toNetworkRequest
 import com.walkmansit.realworld.data.util.toRegistrationFailed
 import com.walkmansit.realworld.domain.model.LoginFailed
 import com.walkmansit.realworld.domain.model.Profile
-import com.walkmansit.realworld.domain.model.ProfileFailed
 import com.walkmansit.realworld.domain.model.RegistrationFailed
+import com.walkmansit.realworld.domain.model.RequestFailed
 import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.model.UserLoginCredentials
 import com.walkmansit.realworld.domain.model.UserRegisterCredentials
@@ -50,14 +49,14 @@ class AuthRepositoryImpl(
 
     }
 
-    override suspend fun getProfile(username: String): Either<ProfileFailed, Profile> {
+    override suspend fun getProfile(username: String): Either<RequestFailed, Profile> {
         return try {
             val response = apiService.getProfile(username)
             Either.success(response.toDomain())
         } catch (e: IOException) {
-            Either.fail(ProfileFailed(commonError = e.message.orEmpty()))
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
         } catch (e: HttpException) {
-            Either.fail(ProfileFailed(commonError = e.message.orEmpty()))
+            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
         }
     }
 
