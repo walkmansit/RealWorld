@@ -30,7 +30,7 @@ import com.walkmansit.realworld.domain.model.UserRegisterCredentials
 
 inline fun <reified T> getErrorResponse(body: String) : T {
     return Gson().fromJson(
-        body ?: "", T::class.java
+        body, T::class.java
     )
 }
 

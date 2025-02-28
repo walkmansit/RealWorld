@@ -4,17 +4,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkmansit.realworld.ArticleDestinationsArgs.SLUG_ARG
-import com.walkmansit.realworld.RwDestinations
-import com.walkmansit.realworld.UiEvent
 import com.walkmansit.realworld.common.TextFieldState
 import com.walkmansit.realworld.domain.model.Article
-import com.walkmansit.realworld.domain.model.EditArticle
 import com.walkmansit.realworld.domain.model.Tag
 import com.walkmansit.realworld.domain.use_case.EditArticleUseCase
 import com.walkmansit.realworld.domain.use_case.GetArticleUseCase
 import com.walkmansit.realworld.domain.use_case.GetTagsUseCase
 import com.walkmansit.realworld.domain.util.Either
-import com.walkmansit.realworld.ui.feed.FeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

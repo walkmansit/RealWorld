@@ -103,7 +103,7 @@ fun TextChipEdit(
                 .padding(start = 8.dp, end = 8.dp),
             style = MaterialTheme.typography.bodyMedium,
             text = text,
-            color = Color.White
+            color = White
         )
 
     }

@@ -3,8 +3,6 @@ package com.walkmansit.realworld.domain.use_case
 import com.walkmansit.realworld.domain.model.Article
 import com.walkmansit.realworld.domain.model.EditArticle
 import com.walkmansit.realworld.domain.model.EditArticleFailed
-import com.walkmansit.realworld.domain.model.NewArticle
-import com.walkmansit.realworld.domain.model.NewArticleFailed
 import com.walkmansit.realworld.domain.repository.ArticleRepository
 import com.walkmansit.realworld.domain.util.Either
 import javax.inject.Inject

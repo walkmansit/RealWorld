@@ -33,8 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.walkmansit.realworld.domain.model.ArticleFilterType
 import com.walkmansit.realworld.ui.article.PaginatedLazyColumn
 import com.walkmansit.realworld.ui.feed.MAP.FILTER_MAPPING
@@ -44,7 +42,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun FeedView(
     modifier: Modifier = Modifier,
-    navController: NavController = rememberNavController(),
+//    navController: NavController = rememberNavController(),
     navigateArticle: (String) -> Unit,
     navigateNewArticle: () -> Unit,
     viewModel: FeedViewModel = hiltViewModel(),
@@ -132,7 +130,7 @@ fun ArticleFilterMenu(
 
     var expanded by remember { mutableStateOf(false) }
     Box(
-        modifier = Modifier.padding(16.dp)
+        modifier = modifier.padding(16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically

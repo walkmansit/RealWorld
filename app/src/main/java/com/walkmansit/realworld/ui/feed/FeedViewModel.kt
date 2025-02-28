@@ -9,7 +9,6 @@ import androidx.paging.cachedIn
 import com.walkmansit.realworld.FeedDestinationsArgs
 import com.walkmansit.realworld.domain.model.ArticleFilterType
 import com.walkmansit.realworld.domain.model.ArticlesFilter
-import com.walkmansit.realworld.domain.use_case.CheckAuthUseCase
 import com.walkmansit.realworld.domain.use_case.GetArticlesUseCase
 import com.walkmansit.realworld.ui.feed.ArticlePagingSource.Companion.FEED_PAGE_SIZE
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,7 +48,6 @@ sealed class FeedNavigationEvent {
 @HiltViewModel
 class FeedViewModel @Inject constructor(
     private val getArticlesUseCase: GetArticlesUseCase,
-    private val checkAuthUseCase: CheckAuthUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 

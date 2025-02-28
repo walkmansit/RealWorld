@@ -48,10 +48,10 @@ fun ArticleView(
 //    LaunchedEffect(key1 = true) {
 //        viewModel.uiState.collectLatest { event ->
 //            when (event.uiEvent) {
-//                is UiEvent.SnackbarEvent -> {
-//                    snackBarHostState.showSnackbar(
+//                is UiEvent.SnackBarEvent -> {
+//                    snackBarHostState.showSnackBar(
 //                        message = event.uiEvent.message,
-//                        duration = SnackbarDuration.Short
+//                        duration = SnackBarDuration.Short
 //                    )
 //                }
 //

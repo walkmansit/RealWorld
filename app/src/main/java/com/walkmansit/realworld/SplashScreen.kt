@@ -51,7 +51,7 @@ fun SplashScreen(
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackBarHostState) },
     ) {
         CircularProgress()

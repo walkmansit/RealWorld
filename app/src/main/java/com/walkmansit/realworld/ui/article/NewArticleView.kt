@@ -85,7 +85,7 @@ fun NewArticleView(
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
             when (event.uiEvent) {
-                is UiEvent.SnackbarEvent -> {
+                is UiEvent.SnackBarEvent -> {
                     snackBarHostState.showSnackbar(
                         message = event.uiEvent.message,
                         duration = SnackbarDuration.Short

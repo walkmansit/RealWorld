@@ -4,6 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import java.util.Date
 
+@Suppress("SpellCheckingInspection")
 @Parcelize
 data class Article (
     val slug: String,

@@ -1,5 +1,6 @@
 package com.walkmansit.realworld.domain.model
 
+@Suppress("SpellCheckingInspection")
 data class ArticlesFilter (
     var filterType : ArticleFilterType,
     var tag: String? = null,

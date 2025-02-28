@@ -22,11 +22,11 @@ sealed class Either<out F, out S> {
     }
 }
 
-suspend fun <E, S, S2> Either<E, S>.carryOn(
-    nextBlock: suspend (S) -> Either<E, S2>
-): Either<E, S2> {
-    return when (this) {
-        is Either.Fail -> this
-        is Either.Success -> nextBlock(value)
-    }
-}
+//suspend fun <E, S, S2> Either<E, S>.carryOn(
+//    nextBlock: suspend (S) -> Either<E, S2>
+//): Either<E, S2> {
+//    return when (this) {
+//        is Either.Fail -> this
+//        is Either.Success -> nextBlock(value)
+//    }
+//}

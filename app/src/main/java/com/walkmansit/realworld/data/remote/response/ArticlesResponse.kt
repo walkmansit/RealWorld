@@ -14,6 +14,7 @@ data class SingleArticleResponse(
     val article: SingleArticle
 )
 
+@Suppress("SpellCheckingInspection")
 data class SingleArticle(
     @SerializedName("slug")
     val slug: String,
