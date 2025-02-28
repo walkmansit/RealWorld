@@ -4,12 +4,17 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkmansit.realworld.ArticleDestinationsArgs.SLUG_ARG
+import com.walkmansit.realworld.RwDestinations
+import com.walkmansit.realworld.UiEvent
 import com.walkmansit.realworld.common.TextFieldState
 import com.walkmansit.realworld.domain.model.Article
+import com.walkmansit.realworld.domain.model.EditArticle
 import com.walkmansit.realworld.domain.model.Tag
+import com.walkmansit.realworld.domain.use_case.EditArticleUseCase
 import com.walkmansit.realworld.domain.use_case.GetArticleUseCase
 import com.walkmansit.realworld.domain.use_case.GetTagsUseCase
 import com.walkmansit.realworld.domain.util.Either
+import com.walkmansit.realworld.ui.feed.FeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,12 +46,14 @@ sealed interface ArticleUiState {
 class ArticleViewModel @Inject constructor(
     private val getArticleUseCase: GetArticleUseCase,
     private val getTagsUseCase: GetTagsUseCase,
+    private val editArticleUseCase: EditArticleUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val _tagsFlow = MutableStateFlow<List<Tag>?>(null)
     private val _articleFlow = MutableStateFlow<Article?>(null)
 
     private val _slug: String = savedStateHandle[SLUG_ARG]!!
+    private lateinit var originalArticle: Article
 
     private val _uiState = MutableStateFlow<ArticleUiState>(ArticleUiState.IsLoading)
     val uiState = _uiState.asStateFlow()
@@ -68,7 +75,9 @@ class ArticleViewModel @Inject constructor(
             fetchTags()
 
             combine(_tagsFlow.filterNotNull(), _articleFlow.filterNotNull()){
-                tag, article -> tag to article
+                tag, article ->
+                originalArticle = article
+                tag to article
             }.collectLatest { pair ->
                 _uiState.update {
                     ArticleUiState.ArticleUiData(
@@ -104,6 +113,48 @@ class ArticleViewModel @Inject constructor(
         }
 
     }
+
+//    private fun submitEditArticle() {
+//
+//        if (_uiState.value is ArticleUiState.ArticleUiData){
+//            val state = _uiState.value as ArticleUiState.ArticleUiData
+//
+//        viewModelScope.launch {
+//            _uiState.update { ArticleUiState.IsLoading }
+//
+//
+//            val editArticleResp = editArticleUseCase(
+//                EditArticle(
+//                    title = state.title.text,
+//                    description = state.description.text,
+//                    body = state.body.text,
+//                ),
+//                originalArticle
+//            )
+//
+//
+//            when (editArticleResp) {
+//                is Either.Success -> {
+////                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
+//                }
+//
+//                is Either.Fail -> {
+//                    _uiState.update {
+//                        ArticleUiState.ArticleUiData(
+//                            title = state.title.copy()
+//                        )
+//                        it.copy(
+//                            title = it.title.copy(error = newArticleResp.value.titleError),
+//                            description = it.description.copy(error = newArticleResp.value.descriptionError),
+//                            body = it.body.copy(error = newArticleResp.value.bodyError),
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//        }
+//    }
+
 
 
 }

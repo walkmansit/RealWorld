@@ -9,6 +9,7 @@ import com.walkmansit.realworld.data.util.toNewArticleFailed
 import com.walkmansit.realworld.domain.model.Article
 import com.walkmansit.realworld.domain.model.ArticleFilterType
 import com.walkmansit.realworld.domain.model.ArticlesFilter
+import com.walkmansit.realworld.domain.model.EditArticle
 import com.walkmansit.realworld.domain.model.NewArticle
 import com.walkmansit.realworld.domain.model.NewArticleFailed
 import com.walkmansit.realworld.domain.model.RequestFailed
@@ -66,6 +67,13 @@ class ArticleRepositoryImpl(
         } catch (e: HttpException) {
             Either.fail(RequestFailed(commonError = e.message.orEmpty()))
         }
+    }
+
+    override suspend fun updateArticle(
+        editArticle: EditArticle,
+        originalArticle: Article
+    ): Either<NewArticleFailed, Article> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun createArticle(newArticle: NewArticle): Either<NewArticleFailed, Article> {
