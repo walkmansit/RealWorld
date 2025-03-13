@@ -14,9 +14,7 @@ import pro.respawn.flowmvi.api.MVIAction
 import pro.respawn.flowmvi.api.MVIIntent
 import pro.respawn.flowmvi.api.MVIState
 import pro.respawn.flowmvi.api.PipelineContext
-import pro.respawn.flowmvi.dsl.state
 import pro.respawn.flowmvi.dsl.store
-import pro.respawn.flowmvi.dsl.updateState
 import pro.respawn.flowmvi.dsl.updateStateOrThrow
 import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
@@ -33,7 +31,7 @@ sealed interface RegistrationIntent : MVIIntent {
 
 sealed interface RegistrationAction : MVIAction {
     data object RedirectLogin : RegistrationAction
-    data object RedirectComplete : RegistrationAction
+    data class RedirectFeed(val username: String) : RegistrationAction
 }
 
 data class RegistrationFields(
@@ -112,7 +110,7 @@ class RegistrationViewModel @Inject constructor(
 
 
     private suspend fun Ctx.submitComplete(result: Either<RegistrationFailed, User>){
-        updateState<RegistrationState.LoadingOnSubmit, _> {
+        updateStateOrThrow<RegistrationState.LoadingOnSubmit, _> {
             when(result){
                 is Either.Fail -> {
                     with(fields){
@@ -125,7 +123,7 @@ class RegistrationViewModel @Inject constructor(
                     }
                 }
                 is Either.Success -> {
-                    action(RegistrationAction.RedirectComplete)
+                    action(RegistrationAction.RedirectFeed(result.value.username))
                     RegistrationState.Content()
                 }
             }
@@ -133,7 +131,7 @@ class RegistrationViewModel @Inject constructor(
     }
 
     private suspend fun Ctx.submit(){
-        updateState<RegistrationState.Content, _> {
+        updateStateOrThrow<RegistrationState.Content, _> {
             val regUserResponse = registrationUseCase(
                 fields.username.text,
                 fields.email.text,

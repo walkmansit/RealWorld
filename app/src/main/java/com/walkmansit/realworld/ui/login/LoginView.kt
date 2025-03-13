@@ -17,7 +17,6 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,13 +30,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.walkmansit.realworld.ui.shared.CircularProgress
 import com.walkmansit.realworld.ui.shared.EmailField
 import com.walkmansit.realworld.ui.shared.PasswordField
 import com.walkmansit.realworld.ui.shared.RwScaffold
-import kotlinx.coroutines.flow.collectLatest
+import pro.respawn.flowmvi.api.IntentReceiver
+import pro.respawn.flowmvi.compose.dsl.subscribe
 
 
 @Composable
@@ -49,24 +49,12 @@ fun LoginView(
     viewModel: LoginViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
 
-) {
-    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+) = with(viewModel.store) {
 
-    LaunchedEffect(key1 = true) {
-        viewModel.uiState.collectLatest { event ->
-            when (event.navEvent) {
-                is LoginNavigationEvent.RedirectRegistration ->
-                {
-                    navigateRegistration()
-                    viewModel.onIntent(LoginIntent.RedirectComplete)
-                }
-                is LoginNavigationEvent.RedirectFeed ->
-                {
-                    navigateFeed(event.navEvent.username)
-                    viewModel.onIntent(LoginIntent.RedirectComplete)
-                }
-                is LoginNavigationEvent.Undefined -> { }
-            }
+    val state by subscribe { action ->
+        when (action) {
+            is LoginAction.RedirectRegistration -> navigateRegistration()
+            is LoginAction.RedirectFeed -> navigateFeed(action.username)
         }
     }
 
@@ -76,67 +64,81 @@ fun LoginView(
         onUpClicked = { navController.popBackStack() },
         snackBarHostState = snackBarHostState,
         fab = {
-            SmallFloatingActionButton(onClick = { viewModel.onIntent(LoginIntent.Submit) }) {
+            SmallFloatingActionButton(onClick = {intent(LoginIntent.SubmitStart)}) {
                 Icon(Icons.Filled.Done, "Submit")
             }
         },
-    ) { padding ->
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ) {
+        LoginViewContainer(state)
+    }
+}
 
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "Hello Again!",
-                fontSize = 26.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "Welcome Back you've been missed",
-                fontSize = 19.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Light,
-                textAlign = TextAlign.Center
-            )
 
-            Spacer(modifier = Modifier.height(32.dp))
+@Composable
+fun IntentReceiver<LoginIntent>.LoginViewContainer(state: LoginState) {
+    when(state){
+        is LoginState.Loading -> CircularProgress()
+        is LoginState.LoadingOnSubmit -> CircularProgress()
+        is LoginState.Error -> Text(text = state.message)
+        is LoginState.Content -> LoginViewContent(state)
+    }
+}
 
-            //Email
-            EmailField(uiState.email) {
-                viewModel.onIntent(LoginIntent.UpdateEmail(it))
-            }
+@Composable
+fun IntentReceiver<LoginIntent>.LoginViewContent(state: LoginState.Content) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Hello Again!",
+            fontSize = 26.sp,
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Welcome Back you've been missed",
+            fontSize = 19.sp,
+            color = Color.Black,
+            fontWeight = FontWeight.Light,
+            textAlign = TextAlign.Center
+        )
 
-            //Password
-            PasswordField(uiState.password) {
-                viewModel.onIntent(LoginIntent.UpdatePassword(it))
-            }
+        Spacer(modifier = Modifier.height(32.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            var enabled by rememberSaveable { mutableStateOf(true) }
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = enabled) {
-                        enabled = false
-                        viewModel.onIntent(LoginIntent.RedirectRegistration)
-                    },
-                text = "Create new account",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Blue,
-                textAlign = TextAlign.Start,
-            )
-
+        //Email
+        EmailField(state.fields.email) {
+            intent(LoginIntent.UpdateEmail(it))
         }
+
+        //Password
+        PasswordField(state.fields.password) {
+            intent(LoginIntent.UpdatePassword(it))
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        var enabled by rememberSaveable { mutableStateOf(true) }
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = enabled) {
+                    enabled = false
+                    intent(LoginIntent.RedirectRegistration)
+                },
+            text = "Create new account",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Blue,
+            textAlign = TextAlign.Start,
+        )
+
     }
 
 }
