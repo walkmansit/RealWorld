@@ -1,3 +1,5 @@
+import org.apache.tools.ant.util.JavaEnvUtils.VERSION_11
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -36,11 +38,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -97,6 +99,17 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
 
+    //FlowMvi
+    implementation(libs.flowmvi.core)
+    implementation(libs.flowmvi.test)
+    implementation(libs.flowmvi.compose)
+    implementation(libs.flowmvi.android)
+    implementation(libs.flowmvi.savedstate)
+    implementation(libs.flowmvi.debugger)
+    implementation(libs.flowmvi.essenty)
+    implementation(libs.flowmvi.essenty.compose)
+
+    //Immutable collections
     implementation(libs.kotlinx.collections.immutable)
 
     //Routing and args

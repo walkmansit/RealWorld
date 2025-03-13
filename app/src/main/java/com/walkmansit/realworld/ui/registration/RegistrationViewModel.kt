@@ -3,109 +3,145 @@ package com.walkmansit.realworld.ui.registration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkmansit.realworld.common.TextFieldState
+import com.walkmansit.realworld.domain.model.RegistrationFailed
+import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.use_case.RegistrationUseCase
 import com.walkmansit.realworld.domain.util.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import pro.respawn.flowmvi.api.ActionShareBehavior
+import pro.respawn.flowmvi.api.Container
+import pro.respawn.flowmvi.api.MVIAction
+import pro.respawn.flowmvi.api.MVIIntent
+import pro.respawn.flowmvi.api.MVIState
+import pro.respawn.flowmvi.api.PipelineContext
+import pro.respawn.flowmvi.dsl.state
+import pro.respawn.flowmvi.dsl.store
+import pro.respawn.flowmvi.dsl.updateState
+import pro.respawn.flowmvi.dsl.updateStateOrThrow
+import pro.respawn.flowmvi.plugins.recover
+import pro.respawn.flowmvi.plugins.reduce
 import javax.inject.Inject
 
-sealed interface RegistrationIntent {
+sealed interface RegistrationIntent : MVIIntent {
     data class UpdateUserName(val username: String) : RegistrationIntent
     data class UpdateEmail(val email: String) : RegistrationIntent
     data class UpdatePassword(val password: String) : RegistrationIntent
     data object Submit : RegistrationIntent
+    data class SubmitComplete(val result: Either<RegistrationFailed, User>) : RegistrationIntent
     data object RedirectLogin : RegistrationIntent
-    data object RedirectComplete : RegistrationIntent
 }
 
-data class RegistrationUiState(
+sealed interface RegistrationAction : MVIAction {
+    data object RedirectLogin : RegistrationAction
+    data object RedirectComplete : RegistrationAction
+}
+
+data class RegistrationFields(
     val username: TextFieldState = TextFieldState(),
     val email: TextFieldState = TextFieldState(),
     val password: TextFieldState = TextFieldState(),
-    val isLoading: Boolean = false,
-    val navEvent: RegNavigationEvent = RegNavigationEvent.Undefined
 )
 
-sealed class RegNavigationEvent {
-    data object Undefined : RegNavigationEvent()
-    data class RedirectFeed(val username: String) : RegNavigationEvent()
-    data object RedirectLogin : RegNavigationEvent()
+sealed interface RegistrationState : MVIState {
+    data object Loading : RegistrationState
+    data class Error(val message: String) : RegistrationState
+    data class Content(val fields: RegistrationFields = RegistrationFields()) : RegistrationState
+    data class LoadingOnSubmit(val fields: RegistrationFields = RegistrationFields()) : RegistrationState
 }
+
+private typealias Ctx = PipelineContext<RegistrationState, RegistrationIntent, RegistrationAction>
 
 @HiltViewModel
 class RegistrationViewModel @Inject constructor(
     private val registrationUseCase: RegistrationUseCase
-) : ViewModel() {
-    private val _uiState = MutableStateFlow(RegistrationUiState())
-    val uiState = _uiState.asStateFlow()
+) : ViewModel(), Container<RegistrationState, RegistrationIntent, RegistrationAction> {
 
-    fun onIntent(intent: RegistrationIntent) {
-        when (intent) {
-            is RegistrationIntent.UpdateUserName -> updateUserName(intent.username)
-            is RegistrationIntent.UpdateEmail -> updateMail(intent.email)
-            is RegistrationIntent.UpdatePassword -> updatePassword(intent.password)
-            is RegistrationIntent.Submit -> registerUser()
-            is RegistrationIntent.RedirectLogin -> redirectLogin()
-            is RegistrationIntent.RedirectComplete -> redirectComplete()
+
+    override val store = store(initial = RegistrationState.Content(), scope = viewModelScope){
+
+        configure {
+            name = "RegistrationStore"
+            debuggable = true
+            actionShareBehavior = ActionShareBehavior.Distribute()
+            parallelIntents = true
+        }
+
+        recover { e: Exception ->
+            updateState {
+                RegistrationState.Error(e.message ?: "Unknown error")
+            }
+            null
+        }
+
+        reduce { intent ->
+            when (intent) {
+                is RegistrationIntent.UpdateUserName -> updateUsername(intent.username)
+                is RegistrationIntent.UpdateEmail -> updateEmail(intent.email)
+                is RegistrationIntent.UpdatePassword -> updatePassword(intent.password)
+                is RegistrationIntent.Submit -> submit()
+                is RegistrationIntent.SubmitComplete -> submitComplete(intent.result)
+                is RegistrationIntent.RedirectLogin -> action(RegistrationAction.RedirectLogin)
+            }
         }
     }
 
-    private fun updateUserName(newValue: String) {
-        _uiState.update {
-            it.copy(username = TextFieldState(newValue))
+    private suspend fun Ctx.updateUsername(newUsername: String){
+        updateStateOrThrow<RegistrationState.Content, _> {
+            copy(fields = with(fields){
+                copy(username = username.copy(text = newUsername))
+            })
         }
     }
 
-    private fun updateMail(newValue: String) {
-        _uiState.update {
-            it.copy(email = TextFieldState(newValue))
+    private suspend fun Ctx.updateEmail(newEmail: String){
+        updateStateOrThrow<RegistrationState.Content, _> {
+            copy(fields = with(fields){
+                copy(email = email.copy(text = newEmail))
+            })
         }
     }
 
-    private fun updatePassword(newValue: String) {
-        _uiState.update {
-            it.copy(password = TextFieldState(newValue))
+    private suspend fun Ctx.updatePassword(newPassword: String){
+        updateStateOrThrow<RegistrationState.Content, _> {
+            copy(fields = with(fields){
+                copy(password = password.copy(text = newPassword))
+            })
         }
+
     }
 
-    private fun registerUser() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
 
-            val regUserResponse = registrationUseCase(
-                _uiState.value.username.text,
-                _uiState.value.email.text,
-                _uiState.value.password.text,
-            )
-
-            _uiState.update { it.copy(isLoading = false) }
-
-            when (regUserResponse) {
-                is Either.Success -> {
-                    _uiState.update { it.copy(navEvent = RegNavigationEvent.RedirectFeed(regUserResponse.value.username)) }
-                }
-
+    private suspend fun Ctx.submitComplete(result: Either<RegistrationFailed, User>){
+        updateState<RegistrationState.LoadingOnSubmit, _> {
+            when(result){
                 is Either.Fail -> {
-                    _uiState.update {
-                        it.copy(
-                            username = it.username.copy(error = regUserResponse.value.usernameError),
-                            email = it.email.copy(error = regUserResponse.value.emailError),
-                            password = it.password.copy(error = regUserResponse.value.passwordError),
+                    with(fields){
+                        val newFields = copy(
+                            username = username.copy(error = result.value.usernameError),
+                            email = email.copy(error = result.value.emailError),
+                            password = password.copy(error = result.value.passwordError),
                         )
+                        RegistrationState.Content(newFields)
                     }
+                }
+                is Either.Success -> {
+                    action(RegistrationAction.RedirectComplete)
+                    RegistrationState.Content()
                 }
             }
         }
     }
 
-    private fun redirectLogin() {
-        _uiState.update { it.copy(navEvent = RegNavigationEvent.RedirectLogin) }
-    }
+    private suspend fun Ctx.submit(){
+        updateState<RegistrationState.Content, _> {
+            val regUserResponse = registrationUseCase(
+                fields.username.text,
+                fields.email.text,
+                fields.password.text,
+            )
+            intent(RegistrationIntent.SubmitComplete(regUserResponse))
 
-    private fun redirectComplete() {
-        _uiState.update { it.copy(navEvent = RegNavigationEvent.Undefined) }
+            RegistrationState.LoadingOnSubmit(fields)
+        }
     }
 }

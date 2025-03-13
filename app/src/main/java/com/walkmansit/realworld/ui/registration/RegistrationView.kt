@@ -1,5 +1,6 @@
 package com.walkmansit.realworld.ui.registration
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -39,10 +40,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.walkmansit.realworld.common.TextFieldState
+import com.walkmansit.realworld.ui.shared.CircularProgress
 import com.walkmansit.realworld.ui.shared.EmailField
 import com.walkmansit.realworld.ui.shared.PasswordField
 import com.walkmansit.realworld.ui.shared.RwScaffold
 import kotlinx.coroutines.flow.collectLatest
+import pro.respawn.flowmvi.api.IntentReceiver
+import pro.respawn.flowmvi.compose.dsl.subscribe
 
 
 @Composable
@@ -53,23 +57,13 @@ fun RegistrationView(
     navigateFeed: (String) -> Unit,
     viewModel: RegistrationViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
-) {
+) = with(viewModel.store)
+{
 
-    LaunchedEffect(key1 = true) {
-        viewModel.uiState.collectLatest { event ->
-            when (event.navEvent) {
-                is RegNavigationEvent.RedirectLogin ->
-                {
-                    navigateLogin()
-                    viewModel.onIntent(RegistrationIntent.RedirectComplete)
-                }
-                is RegNavigationEvent.RedirectFeed ->
-                {
-                    navigateFeed(event.navEvent.username)
-                    viewModel.onIntent(RegistrationIntent.RedirectComplete)
-                }
-                is RegNavigationEvent.Undefined -> { }
-            }
+    val state by subscribe { action ->
+        when (action) {
+            RegistrationAction.RedirectComplete -> navigateFeed("")
+            RegistrationAction.RedirectLogin -> navigateLogin()
         }
     }
 
@@ -79,15 +73,23 @@ fun RegistrationView(
         onUpClicked = { navController.popBackStack() },
         snackBarHostState = snackBarHostState,
         fab = {
-            SmallFloatingActionButton(onClick = { viewModel.onIntent(RegistrationIntent.Submit) }) {
+            SmallFloatingActionButton(onClick = { intent(RegistrationIntent.Submit) }) {
                 Icon(Icons.Filled.Done, "Submit")
             }
         },
-    ) { padding ->
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ) {
+        RegistrationViewContent(state = state)
+    }
+}
 
-        Column(
-            modifier = modifier
+@Composable
+fun IntentReceiver<RegistrationIntent>.RegistrationViewContent(state: RegistrationState) {
+    when(state){
+        is RegistrationState.Loading -> CircularProgress()
+        is RegistrationState.LoadingOnSubmit -> CircularProgress()
+        is RegistrationState.Error -> Text(text = state.message)
+        is RegistrationState.Content -> Column(
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
@@ -112,18 +114,18 @@ fun RegistrationView(
             )
 
             //Username
-            UserNameField(uiState.username, "Username ") {
-                viewModel.onIntent(RegistrationIntent.UpdateUserName(it))
+            UserNameField(state.fields.username, "Username ") {
+                intent(RegistrationIntent.UpdateUserName(it))
             }
 
             //Email
-            EmailField(uiState.email) {
-                viewModel.onIntent(RegistrationIntent.UpdateEmail(it))
+            EmailField(state.fields.email) {
+                intent(RegistrationIntent.UpdateEmail(it))
             }
 
             //Password
-            PasswordField(uiState.password) {
-                viewModel.onIntent(RegistrationIntent.UpdatePassword(it))
+            PasswordField(state.fields.password) {
+                intent(RegistrationIntent.UpdatePassword(it))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -134,7 +136,7 @@ fun RegistrationView(
                     .fillMaxWidth()
                     .clickable(enabled = enabled) {
                         enabled = false
-                        viewModel.onIntent(RegistrationIntent.RedirectLogin)
+                        intent(RegistrationIntent.RedirectLogin)
                     },
                 text = "Already have an account? Sign in",
                 style = MaterialTheme.typography.bodyMedium,
@@ -142,8 +144,8 @@ fun RegistrationView(
                 textAlign = TextAlign.Start,
             )
         }
-    }
 
+    }
 }
 
 @Composable
