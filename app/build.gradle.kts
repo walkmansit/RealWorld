@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
 
+
 //    id("kotlin-kapt")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
@@ -13,7 +14,7 @@ plugins {
 
 android {
     namespace = "com.walkmansit.realworld"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.walkmansit.realworld"

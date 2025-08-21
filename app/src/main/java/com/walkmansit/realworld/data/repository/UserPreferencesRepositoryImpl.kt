@@ -34,8 +34,9 @@ class UserPreferencesRepositoryImpl(
             }
 
     private fun mapUserAuth(preferences: Preferences): Either<EmptyUser, User> {
-        val token =
-            preferences[Constants.PreferencesKeys.USER_TOKEN] ?: return Either.fail(EmptyUser)
+        val token = preferences[Constants.PreferencesKeys.USER_TOKEN] ?: ""
+        if (token.isEmpty())
+            return Either.fail(EmptyUser)
 
         val name = preferences[Constants.PreferencesKeys.USER_NAME] ?: "name"
         val email = preferences[Constants.PreferencesKeys.USER_EMAIL] ?: ""
@@ -45,13 +46,25 @@ class UserPreferencesRepositoryImpl(
         return Either.success(User(email, token, name, bio, image))
     }
 
-    override suspend fun updateUser(user: User) {
-        dataStore.edit { preferences ->
-            preferences[Constants.PreferencesKeys.USER_NAME] = user.username
-            preferences[Constants.PreferencesKeys.USER_TOKEN] = user.token
-            preferences[Constants.PreferencesKeys.USER_EMAIL] = user.email
-            preferences[Constants.PreferencesKeys.USER_BIO] = user.bio
-            preferences[Constants.PreferencesKeys.USER_IMAGE] = user.image ?: ""
+    override suspend fun updateUser(user: Either<EmptyUser, User>) {
+        when(user){
+            is Either.Fail -> {
+                dataStore.edit { preferences ->
+                    preferences[Constants.PreferencesKeys.USER_TOKEN] = ""
+                }
+            }
+            is Either.Success -> {
+                dataStore.edit { preferences ->
+                    preferences[Constants.PreferencesKeys.USER_NAME] = user.value.username
+                    preferences[Constants.PreferencesKeys.USER_TOKEN] = user.value.token
+                    preferences[Constants.PreferencesKeys.USER_EMAIL] = user.value.email
+                    preferences[Constants.PreferencesKeys.USER_BIO] = user.value.bio
+                    preferences[Constants.PreferencesKeys.USER_IMAGE] = user.value.image ?: ""
+                }
+
+            }
         }
+
+
     }
 }

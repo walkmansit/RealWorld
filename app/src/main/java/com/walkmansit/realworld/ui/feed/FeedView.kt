@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AirlineStops
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.DropdownMenu
@@ -45,6 +46,7 @@ fun FeedView(
 //    navController: NavController = rememberNavController(),
     navigateArticle: (String) -> Unit,
     navigateNewArticle: () -> Unit,
+    navigateLogin: () -> Unit,
     viewModel: FeedViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
@@ -62,6 +64,11 @@ fun FeedView(
                 is FeedNavigationEvent.RedirectNewArticle ->
                 {
                     navigateNewArticle()
+                    viewModel.onIntent(FeedIntent.RedirectComplete)
+                }
+                is FeedNavigationEvent.RedirectLogin ->
+                {
+                    navigateLogin()
                     viewModel.onIntent(FeedIntent.RedirectComplete)
                 }
                 is FeedNavigationEvent.Undefined -> { }
@@ -92,9 +99,17 @@ fun FeedView(
                     ArticleFilterMenu(
                         modifier,
                         uiState.selectedFilter
-                    ) { viewModel.onIntent(FeedIntent.ChangeFilter(it)) }
+                    ) { viewModel.onIntent(FeedIntent.LogOut) }
+                },
+                actions = {
+                    IconButton(onClick = { viewModel.onIntent(FeedIntent.LogOut) }) {
+                        Icon(
+                            imageVector = Icons.Filled.AirlineStops,
+                            contentDescription = "Logout"
+                        )
+                    }
+                },
 
-                }
             )
         },
         snackbarHost = { SnackbarHost(snackBarHostState) },

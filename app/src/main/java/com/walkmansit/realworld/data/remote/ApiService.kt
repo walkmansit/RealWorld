@@ -19,39 +19,39 @@ interface ApiService {
 
 
     //Authorization
-    @POST("/api/users/login")
+    @POST("/api/v1/users/login")
     suspend fun loginUser(
         @Body loginRequest: AuthRequest
     ): AuthResponse
 
 
-    @POST("/api/users")
+    @POST("/api/v1/users")
     suspend fun registerUser(
         @Body registerRequest: RegistrationRequest
     ): AuthResponse
 
     //Tags
-    @GET("/api/tags")
+    @GET("/api/v1/tags")
     suspend fun getTags(): TagsResponse
 
     //Profile
-    @GET("/api/profiles/{username}")
+    @GET("/api/v1/profiles/{username}")
     suspend fun getProfile(
         @Path("username") username: String,
     ): ProfileResponse
 
     //Articles
 
-    @GET("/api/articles/{slug}")
+    @GET("/api/v1/articles/{slug}")
     suspend fun getArticle(@Path("slug") slug: String,
     ): SingleArticleResponse
 
-    @POST("/api/articles")
+    @POST("/api/v1/articles")
     suspend fun createArticle(
         @Body newArticle: NewArticleRequest
     ): SingleArticleResponse
 
-    @GET("/api/articles")
+    @GET("/api/v1/articles")
     suspend fun getArticles(
         @Query("tag") tag: String?,
         @Query("author") author: String?,
@@ -60,7 +60,7 @@ interface ApiService {
         @Query("offset") offset: Int,
         ): ArticlesResponse
 
-    @GET("/api/articles/feed")
+    @GET("/api/v1/articles/feed")
     suspend fun getArticlesFeed(
         @Query("limit") limit: Int,
         @Query("offset") offset: Int,

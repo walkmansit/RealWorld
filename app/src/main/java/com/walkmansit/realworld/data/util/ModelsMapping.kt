@@ -10,6 +10,7 @@ import com.walkmansit.realworld.data.remote.request.UserRegistrationRequest
 import com.walkmansit.realworld.data.remote.response.ArticlesResponse
 import com.walkmansit.realworld.data.remote.response.AuthResponse
 import com.walkmansit.realworld.data.remote.response.AuthorResponse
+import com.walkmansit.realworld.data.remote.response.BaseErrorResponse
 import com.walkmansit.realworld.data.remote.response.LoginErrorResponse
 import com.walkmansit.realworld.data.remote.response.NewArticleErrorResponse
 import com.walkmansit.realworld.data.remote.response.ProfileResponse
@@ -19,6 +20,7 @@ import com.walkmansit.realworld.data.remote.response.SingleArticleResponse
 import com.walkmansit.realworld.data.remote.response.TagsResponse
 import com.walkmansit.realworld.domain.model.Article
 import com.walkmansit.realworld.domain.model.Author
+import com.walkmansit.realworld.domain.model.CommonError
 import com.walkmansit.realworld.domain.model.LoginFailed
 import com.walkmansit.realworld.domain.model.NewArticle
 import com.walkmansit.realworld.domain.model.NewArticleFailed
@@ -27,11 +29,27 @@ import com.walkmansit.realworld.domain.model.RegistrationFailed
 import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.model.UserLoginCredentials
 import com.walkmansit.realworld.domain.model.UserRegisterCredentials
+import com.walkmansit.realworld.domain.util.Either
 
 inline fun <reified T> getErrorResponse(body: String) : T {
     return Gson().fromJson(
         body, T::class.java
     )
+}
+
+inline fun <reified R, T> getErrorEither(body: String, mapper: ModelsMapper<R, T>) : Either<CommonError, T> {
+    return try {
+        val result = getErrorResponse<BaseErrorResponse>(body)
+        Either.fail(CommonError(result.error))
+    }
+    catch (e: Exception) {
+        val result = getErrorResponse<R>(body)
+        Either.success(mapper.map(result))
+    }
+}
+
+interface ModelsMapper<R, T> {
+    fun map(data: R) : T
 }
 
 fun AuthResponse.toDomain() = User(
@@ -65,20 +83,20 @@ fun ProfileResponse.toDomain() = Profile(
 )
 
 fun RegistrationErrorResponse.toRegistrationFailed() = RegistrationFailed(
-    usernameError = errors.username.joinToString(),
-    emailError = errors.email.joinToString(),
-    passwordError = errors.password.joinToString(),
+    usernameError = user.username.joinToString(", "),
+    emailError = user.email.joinToString(", "),
+    passwordError = user.password.joinToString(", "),
 )
 
 fun LoginErrorResponse.toLoginFailed() = LoginFailed(
-    emailError = errors.email.joinToString(),
-    passwordError = errors.password.joinToString(),
+    emailError = user.email.joinToString(", "),
+    passwordError = user.password.joinToString(", "),
 )
 
 fun NewArticleErrorResponse.toNewArticleFailed() = NewArticleFailed(
-    titleError = errors.title.joinToString(),
-    descriptionError = errors.description.joinToString(),
-    bodyError = errors.body.joinToString(),
+    titleError = errors.title.joinToString(", "),
+    descriptionError = errors.description.joinToString(", "),
+    bodyError = errors.body.joinToString(", "),
 )
 
 fun NewArticle.toNetworkRequest() = NewArticleRequest(

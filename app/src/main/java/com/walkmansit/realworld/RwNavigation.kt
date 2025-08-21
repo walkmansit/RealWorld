@@ -1,5 +1,6 @@
 package com.walkmansit.realworld
 
+import android.widget.Toast
 import androidx.navigation.NavHostController
 import com.walkmansit.realworld.ArticleDestinationsArgs.CAN_EDIT_ARG
 import com.walkmansit.realworld.ArticleDestinationsArgs.SLUG_ARG
@@ -55,6 +56,10 @@ class NavigationActions(private val navController: NavHostController) {
 
     fun navigateToFeed(username: String){
         navController.navigate("$FEED$USERNAME_ARG={$username}")
+    }
+
+    fun toast(text: String){
+        Toast.makeText(navController.context, text, Toast.LENGTH_SHORT).show()
     }
 
     fun navigateToArticle(slug: String, canEdit: Boolean = false){

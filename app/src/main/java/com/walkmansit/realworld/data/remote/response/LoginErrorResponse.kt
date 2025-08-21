@@ -1,7 +1,7 @@
 package com.walkmansit.realworld.data.remote.response
 
 data class LoginErrorResponse(
-    val errors: LoginErrorBody,
+    val user: LoginErrorBody,
 )
 
 data class LoginErrorBody(

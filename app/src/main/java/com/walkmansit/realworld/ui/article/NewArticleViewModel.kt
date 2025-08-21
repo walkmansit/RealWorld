@@ -2,199 +2,154 @@ package com.walkmansit.realworld.ui.article
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.walkmansit.realworld.RwDestinations
-import com.walkmansit.realworld.UiEvent
 import com.walkmansit.realworld.common.TextFieldState
-import com.walkmansit.realworld.domain.model.Tag
+import com.walkmansit.realworld.domain.model.Article
+import com.walkmansit.realworld.domain.model.NewArticleFailed
 import com.walkmansit.realworld.domain.use_case.GetTagsUseCase
 import com.walkmansit.realworld.domain.use_case.NewArticleUseCase
 import com.walkmansit.realworld.domain.util.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import pro.respawn.flowmvi.api.ActionShareBehavior
+import pro.respawn.flowmvi.api.Container
+import pro.respawn.flowmvi.api.MVIAction
+import pro.respawn.flowmvi.api.MVIIntent
+import pro.respawn.flowmvi.api.MVIState
+import pro.respawn.flowmvi.api.PipelineContext
+import pro.respawn.flowmvi.dsl.store
+import pro.respawn.flowmvi.dsl.updateStateOrThrow
+import pro.respawn.flowmvi.plugins.recover
+import pro.respawn.flowmvi.plugins.reduce
 import javax.inject.Inject
 
-sealed interface NewArticleIntent {
-    data class UpdateTitleIntent(val title: String) : NewArticleIntent
-    data class UpdateDescriptionIntent(val description: String) : NewArticleIntent
-    data class UpdateBodyIntent(val body: String) : NewArticleIntent
-    data class UpdateSearchQueryIntent(val query: String) : NewArticleIntent
-    data object SubmitTag : NewArticleIntent
-    data class DeleteTag(val tag: Tag) : NewArticleIntent
-    data class AddTag(val tag: Tag) : NewArticleIntent
+sealed interface NewArticleIntent : MVIIntent {
+    data class UpdateTitle(val title: String) : NewArticleIntent
+    data class UpdateDescription(val description: String) : NewArticleIntent
+    data class UpdateBody(val body: String) : NewArticleIntent
     data object Submit : NewArticleIntent
+    data class SubmitComplete(val result: Either<NewArticleFailed, Article>) : NewArticleIntent
 }
 
-data class NewArticleUiState(
+sealed interface NewArticleState : MVIState {
+    data object Loading : NewArticleState
+    data class Error(val message: String) : NewArticleState
+    data class Content(val content: NewArticleFields = NewArticleFields()) : NewArticleState
+    data class LoadingOnSubmit(val content: NewArticleFields ) : NewArticleState
+    //data class LoadingOnSubmit(val fields: RegistrationFields = RegistrationFields()) : NewArticleState
+}
+
+sealed interface NewArticleAction : MVIAction {
+    data object SubmitComplete : NewArticleAction
+}
+
+data class NewArticleFields(
     val title: TextFieldState = TextFieldState(),
     val description: TextFieldState = TextFieldState(),
     val body: TextFieldState = TextFieldState(),
-    val searchQuery: TextFieldState = TextFieldState(),
-    val searchResult: List<Tag> = listOf(),
-    val selectedTags: List<Tag> = listOf(),
-    val isLoading: Boolean = false,
-    val uiEvent: UiEvent = UiEvent.Undefined
 )
+
+private typealias Ctx = PipelineContext<NewArticleState, NewArticleIntent, NewArticleAction>
 
 @HiltViewModel
 class NewArticleViewModel @Inject constructor(
     private val newArticleUseCase: NewArticleUseCase,
     private val getTagsUseCase: GetTagsUseCase,
-) : ViewModel() {
+) : ViewModel(), Container<NewArticleState, NewArticleIntent, NewArticleAction> {
 
-    private val _uiState = MutableStateFlow(NewArticleUiState())
-    val uiState = _uiState.asStateFlow()
-
-    private val _selectedTags : MutableSet<Tag> = mutableSetOf()
-
-    private var _allTagsShadow : MutableSet<Tag> = mutableSetOf()
-    private val _allTags : MutableStateFlow<Set<Tag>> = MutableStateFlow(setOf())
-    private val _searchQuery : MutableStateFlow<String> = MutableStateFlow("")
-    private var tagIdx = 0
-
-    init {
-        _uiState.update {
-            it.copy(selectedTags  = _selectedTags.toList())
+    override val store = store(initial = NewArticleState.Content(), viewModelScope){
+        configure {
+            name = "NewArticleStore"
+            debuggable = true
+            actionShareBehavior = ActionShareBehavior.Distribute()
+            parallelIntents = true
         }
-        fetchTags(_selectedTags.size)
-    }
 
-    fun onIntent(intent: NewArticleIntent) {
-        when (intent) {
-            is NewArticleIntent.UpdateTitleIntent -> updateTitle(intent.title)
-            is NewArticleIntent.UpdateDescriptionIntent -> updateDescription(intent.description)
-            is NewArticleIntent.UpdateBodyIntent -> updateBody(intent.body)
-            is NewArticleIntent.UpdateSearchQueryIntent -> updateSearchQuery(intent.query)
-            is NewArticleIntent.SubmitTag -> submitTag()
-            is NewArticleIntent.DeleteTag -> deleteTag(intent.tag)
-            is NewArticleIntent.AddTag -> addTag(intent.tag)
-            is NewArticleIntent.Submit -> submitNewArticle()
+        recover { e: Exception ->
+            updateState {
+                NewArticleState.Error(e.message ?: "Unknown error")
+            }
+            null
         }
-    }
 
-    private fun updateDescription(newValue: String) {
-        _uiState.update {
-            it.copy(description = TextFieldState(newValue))
+        reduce { intent ->
+            when (intent) {
+                is NewArticleIntent.UpdateTitle -> updateTitle(intent.title)
+                is NewArticleIntent.UpdateDescription -> updateDescription(intent.description)
+                is NewArticleIntent.UpdateBody -> updateBody(intent.body)
+                is NewArticleIntent.Submit -> submitNewArticle()
+                is NewArticleIntent.SubmitComplete -> {}
+            }
         }
+
     }
 
-    private fun updateTitle(newValue: String) {
-        _uiState.update {
-            it.copy(title = TextFieldState(newValue))
-        }
-    }
 
-    private fun updateBody(newValue: String) {
-        _uiState.update {
-            it.copy(body = TextFieldState(newValue))
-        }
-    }
-
-    private fun updateSearchQuery(query: String){
-        //activate combine and filter results
-        _searchQuery.value = query
-        //update ui state
-        _uiState.update { it.copy(searchQuery = TextFieldState(text = query)) }
-    }
-
-    private fun addTag(tag: Tag){
-        viewModelScope.launch {
-            if (!_selectedTags.contains(tag)){
-                _selectedTags.add(tag)
-                _uiState.update { it.copy(selectedTags = _selectedTags.toList()) }
-
-                //remove tag from all tags and run side effect
-                _allTagsShadow.remove(tag)
-                _allTags.value = _allTagsShadow.toSet()
+    private suspend fun Ctx.updateDescription(newValue: String) {
+        updateStateOrThrow<NewArticleState.Content, _> {
+            with(content){
+                copy(content = copy(
+                    description = description.copy(text = newValue)
+                ))
             }
         }
     }
 
-    private fun submitTag(){
-        val tagValue = _uiState.value.searchQuery.text
-        if (tagValue.isNotEmpty()
-            && _selectedTags.none { it.value.lowercase() == tagValue }
-            && _allTags.value.none { it.value.lowercase() == tagValue }
-        ){
-            tagIdx += 1
-            _selectedTags.add(Tag(tagIdx, tagValue))
-            _uiState.update {
-                it.copy(selectedTags  = _selectedTags.toList(), searchQuery = TextFieldState())
+    private suspend fun Ctx.updateTitle(newValue: String) {
+        updateStateOrThrow<NewArticleState.Content, _> {
+            with(content){
+                copy(content = copy(
+                    title = title.copy(text = newValue)
+                ))
             }
         }
     }
 
-    private fun deleteTag(tag: Tag){
-        viewModelScope.launch {
-            if (_selectedTags.contains(tag)) {
-                _selectedTags.remove(tag)
-                _uiState.update {
-                    it.copy(selectedTags = _selectedTags.toList())
-                }
-
-                _allTagsShadow.add(tag)
-                _allTags.value = _allTagsShadow.toSet()
+    private suspend fun Ctx.updateBody(newValue: String) {
+        updateStateOrThrow<NewArticleState.Content, _> {
+            with(content){
+                copy(content = copy(
+                    body = body.copy(text = newValue)
+                ))
             }
         }
     }
 
-    private fun fetchTags(idxOffset: Int){
-        viewModelScope.launch {
-            val tagsRes = getTagsUseCase()
-            if(tagsRes is Either.Success){
-                _allTagsShadow = tagsRes.value
-                    .mapIndexed { index, s -> Tag(index + idxOffset, s).also { tagIdx = index + idxOffset  } }
-                    .toMutableSet()
-                _allTags.value = _allTagsShadow.toSet()
-            }
-        }
-    }
-
-    val searchResult: StateFlow<List<Tag>> = combine(_searchQuery ,_allTags) { query, tags ->
-            tags.toList().filter { it.value.contains(query) }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(5_000)
-        )
-
-    private fun submitNewArticle() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-
-            val newArticleResp = newArticleUseCase(
-                uiState.value.title.text,
-                uiState.value.description.text,
-                uiState.value.body.text,
-                _selectedTags.toList().map { it.value }
-            )
-
-            _uiState.update { it.copy(isLoading = false) }
-
-
-            when (newArticleResp) {
-                is Either.Success -> {
-                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
-                }
-
+    private suspend fun Ctx.submitComplete(result: Either<NewArticleFailed, Article>){
+        updateStateOrThrow<NewArticleState.LoadingOnSubmit, _> {
+            when(result){
                 is Either.Fail -> {
-                    _uiState.update {
-                        it.copy(
-                            title = it.title.copy(error = newArticleResp.value.titleError),
-                            description = it.description.copy(error = newArticleResp.value.descriptionError),
-                            body = it.body.copy(error = newArticleResp.value.bodyError),
+                    with(content){
+                        val newFields = copy(
+                            description = description.copy(error = result.value.descriptionError),
+                            title = title.copy(error = result.value.titleError),
+                            body = body.copy(error = result.value.bodyError),
                         )
+                        NewArticleState.Content(newFields)
                     }
                 }
+                is Either.Success -> {
+                    action(NewArticleAction.SubmitComplete)
+                    NewArticleState.Content()
+                }
             }
+        }
 
+    }
+
+    private suspend fun Ctx.submitNewArticle() {
+        updateStateOrThrow<NewArticleState.Content, _> {
+            with(content){
+                val newArticleResponse = newArticleUseCase(
+                    title = title.text,
+                    description = description.text,
+                    body = body.text,
+                    tags = listOf(),
+                )
+
+                intent(NewArticleIntent.SubmitComplete(newArticleResponse))
+            }
+            NewArticleState.LoadingOnSubmit(content)
         }
     }
 }
+
+

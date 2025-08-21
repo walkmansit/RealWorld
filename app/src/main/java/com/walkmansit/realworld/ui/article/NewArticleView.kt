@@ -1,5 +1,7 @@
 package com.walkmansit.realworld.ui.article
 
+
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,13 +34,12 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,196 +59,242 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.walkmansit.realworld.UiEvent
-import com.walkmansit.realworld.domain.model.Tag
+import com.walkmansit.realworld.ui.shared.CircularProgress
 import com.walkmansit.realworld.ui.shared.MultilineTextField
 import com.walkmansit.realworld.ui.shared.RegularTextField
+import com.walkmansit.realworld.ui.shared.RwScaffold
 import com.walkmansit.realworld.ui.shared.TagsComponent
+import com.walkmansit.realworld.ui.shared.TagsComponentSimple
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import com.walkmansit.realworld.ui.shared.RwScaffold as RwScaffold1
+import pro.respawn.flowmvi.api.IntentReceiver
+import pro.respawn.flowmvi.compose.dsl.subscribe
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewArticleView(
     modifier: Modifier = Modifier,
     navController: NavController = rememberNavController(),
-    viewModel: NewArticleViewModel = hiltViewModel(),
+    articleViewModel: NewArticleViewModel = hiltViewModel(),
+    tagsViewModel: TagsViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
-) {
-
-    var showBottomSheet by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    LaunchedEffect(key1 = true) {
-        viewModel.uiState.collectLatest { event ->
-            when (event.uiEvent) {
-                is UiEvent.SnackBarEvent -> {
-                    snackBarHostState.showSnackbar(
-                        message = event.uiEvent.message,
-                        duration = SnackbarDuration.Short
-                    )
-                }
-
-                is UiEvent.NavigateEvent -> {
-                    navController.navigate(event.uiEvent.route)
-                }
-
-                is UiEvent.Undefined -> {}
-            }
+) = with(articleViewModel.store) {
+    val state by subscribe { action ->
+        when (action) {
+            is NewArticleAction.SubmitComplete -> {}
         }
     }
 
-    RwScaffold1(
+    RwScaffold(
         title = "New Article",
         upAvailable = navController.previousBackStackEntry != null,
         onUpClicked = { navController.popBackStack() },
         snackBarHostState = snackBarHostState,
         fab = {
-            FloatingActionButton(onClick = { viewModel.onIntent(NewArticleIntent.Submit) }) {
+            FloatingActionButton(onClick = { articleViewModel.store.intent(NewArticleIntent.Submit) }) {
                 Icon(Icons.Filled.Done, "Submit")
             }
         },
-    ) { padding ->
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ) {
+        NewArticleViewContainer(state, tagsViewModel)
+    }
+}
 
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "New article",
-                fontSize = 26.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
+@Composable
+fun IntentReceiver<NewArticleIntent>.NewArticleViewContainer(state: NewArticleState, tagsViewModel: TagsViewModel) {
+    when(state){
+        is NewArticleState.Loading -> CircularProgress()
+        is NewArticleState.LoadingOnSubmit -> CircularProgress()
+        is NewArticleState.Error -> Text(text = state.message)
+        is NewArticleState.Content -> NewArticleViewContent(state.content, tagsViewModel)
+    }
+}
 
-            RegularTextField(uiState.title, "Title") {
-                viewModel.onIntent(NewArticleIntent.UpdateTitleIntent(it))
+@Composable
+fun IntentReceiver<TagsIntent>.TagsViewContainer(state: TagState) {
+    when(state){
+        is TagState.Loading -> CircularProgress()
+        is TagState.Error -> Text(text = state.message)
+        is TagState.Content -> TagsViewContent(state.content)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun IntentReceiver<TagsIntent>.TagsViewContent(content : TagFields){
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+
+    TagsComponent(
+        content.selectedTags,
+        true,
+        { tag -> intent(TagsIntent.DeleteTag(tag)) },
+        { showBottomSheet =  true},
+    )
+
+    val onHide = coroutineScope
+        .launch { sheetState.hide() }
+        .invokeOnCompletion {
+            if (!sheetState.isVisible) {
+                showBottomSheet = false
             }
-
-            RegularTextField(uiState.description, "Description") {
-                viewModel.onIntent(NewArticleIntent.UpdateDescriptionIntent(it))
-            }
-
-            MultilineTextField(uiState.body, "Body") {
-                viewModel.onIntent(NewArticleIntent.UpdateBodyIntent(it))
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "Tags",
-                fontSize = 24.sp,
-                color = Color.Black,
-                textAlign = TextAlign.Center,
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            TagsComponent(uiState.selectedTags, true,
-                { viewModel.onIntent(NewArticleIntent.DeleteTag(it)) },
-                { showBottomSheet = true}
-            )
-
-
-            BackHandler(sheetState.isVisible) {
-                coroutineScope.launch { sheetState.hide() }
-            }
-
-            if (showBottomSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = {
-                        showBottomSheet = false
-                    },
-                    sheetState = sheetState,
-                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 16.dp,
-                    dragHandle = {
-                        Box(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .width(50.dp)
-                                .height(6.dp)
-                                .clip(RoundedCornerShape(50))
-                                .background(MaterialTheme.colorScheme.primary)
-                                .align(Alignment.Start)
-                        )
-                    }
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                "Tags",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            IconButton(onClick = {
-                                coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
-                                    if (!sheetState.isVisible) {
-                                        showBottomSheet = false
-                                    }
-                                }
-                            }) {
-                                Icon(imageVector = Icons.Filled.ArrowDownward, "hide")
-                            }
-
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        TagsComponent(uiState.selectedTags, false,
-                            { viewModel.onIntent(NewArticleIntent.DeleteTag(it)) },
-                            { showBottomSheet = true}
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        SearchScreen(
-                            { viewModel.onIntent(NewArticleIntent.UpdateSearchQueryIntent(it)) },
-                            { viewModel.onIntent(NewArticleIntent.SubmitTag) },
-                            { viewModel.onIntent(NewArticleIntent.DeleteTag(it)) },
-                            { viewModel.onIntent(NewArticleIntent.AddTag(it)) },
-                            uiState.searchQuery.text,
-                            viewModel.searchResult,
-                        )
-                    }
-                }
-            }
-
-
         }
+
+    TagsBottomSheet(
+        showBottomSheet,
+        sheetState,
+        tagFields = content,
+        {}
+    )
+
+    BackHandler(sheetState.isVisible) {
+        coroutineScope.launch { sheetState.hide() }
     }
 
+}
+
+@Composable
+fun IntentReceiver<NewArticleIntent>.NewArticleViewContent(content: NewArticleFields, tagsViewModel: TagsViewModel) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "New article",
+            fontSize = 26.sp,
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+
+        RegularTextField(content.title, "Title") {
+            intent(NewArticleIntent.UpdateTitle(it))
+        }
+
+        RegularTextField(content.description, "Description") {
+            intent(NewArticleIntent.UpdateDescription(it))
+        }
+
+        MultilineTextField(content.body, "Body") {
+            intent(NewArticleIntent.UpdateBody(it))
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Tags",
+            fontSize = 24.sp,
+            color = Color.Black,
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        with(tagsViewModel.store){
+            val tagState by tagsViewModel.store.subscribe()
+            TagsViewContainer(tagState)
+        }
+
+//        TagsComponent(content.selectedTags, true,
+//            { viewModel.onIntent(NewArticleIntent.DeleteTag(it)) },
+//            { showBottomSheet = true }
+//        )
+
+    }
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun IntentReceiver<TagsIntent>.TagsBottomSheet(
+    showBottomSheet: Boolean,
+    sheetState: SheetState,
+    tagFields: TagFields,
+    onHide: () -> Unit,
+){
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+//                showBottomSheet = false
+            },
+            sheetState = sheetState,
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 16.dp,
+            dragHandle = {
+                Box(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .width(50.dp)
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(MaterialTheme.colorScheme.primary)
+//                        .align(Alignment.Start)
+                )
+            }
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "Tags",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    IconButton(onClick = onHide
+                    ) {
+                        Icon(imageVector = Icons.Filled.ArrowDownward, "hide")
+                    }
+
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                TagsComponentSimple(tags = tagFields.selectedTags)
+//                TagsComponent(tagFields.selectedTags, false,
+//                    { viewModel.onIntent(NewArticleIntent.DeleteTag(it)) },
+//                    { showBottomSheet = true}
+//                )
+                Spacer(modifier = Modifier.height(16.dp))
+                SearchScreen(
+                    { intent(TagsIntent.UpdateSearchQuery(it)) },
+                    { intent(TagsIntent.SubmitNewTag(it)) },
+//                    { intent(TagsIntent.DeleteTag(it)) },
+                    { intent(TagsIntent.AddTag(it)) },
+                    tagFields.searchQuery.text,
+                    tagFields.searchResult,
+                )
+            }
+        }
+    }
+
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun SearchScreen(
     onUpdateQuery: (query: String) -> Unit,
-    onSubmitTag: () -> Unit,
-    onDeleteTag: (tag: Tag) -> Unit,
-    onAddTag: (tag: Tag) -> Unit,
+    onSubmitTag: (tag: String) -> Unit,
+//    onDeleteTag: (tag: String) -> Unit,
+    onAddTag: (tag: String) -> Unit,
     searchQuery: String,
-    searchResultsFlow: StateFlow<List<Tag>>
+    searchResults: List<String>,
 ) {
-    val searchResults by searchResultsFlow.collectAsStateWithLifecycle()
+//    val searchResults by searchResultsFlow.collectAsStateWithLifecycle()
 
     val onActiveChange : (Boolean) -> Unit = {
     }
@@ -267,7 +314,7 @@ fun SearchScreen(
                     imeAction = ImeAction.Done,
                 ),
                 keyboardActions = KeyboardActions(
-                    onDone = { onSubmitTag() }
+                    onDone = { onSubmitTag(searchQuery) }
                 ),
                 trailingIcon = {
                     Icon(
@@ -317,7 +364,7 @@ fun SearchScreen(
         ) {
             items(
                 count = searchResults.size,
-                key = { index -> searchResults[index].id },
+                key = { index -> searchResults[index] },
                 itemContent = { index ->
                     val tag = searchResults[index]
                     TagListItem(tag = tag, onAddTag)
@@ -330,8 +377,8 @@ fun SearchScreen(
 
 @Composable
 fun TagListItem(
-    tag: Tag,
-    onAddTag: (tag: Tag) -> Unit,
+    tag: String,
+    onAddTag: (tag: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     TextButton(onClick = { onAddTag(tag) }) {
@@ -339,7 +386,7 @@ fun TagListItem(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = modifier.fillMaxWidth()
         ) {
-            Text(text = tag.value)
+            Text(text = tag)
         }
     }
 

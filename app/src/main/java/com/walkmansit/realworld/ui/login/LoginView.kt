@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.walkmansit.realworld.ui.registration.RegistrationAction
 import com.walkmansit.realworld.ui.shared.CircularProgress
 import com.walkmansit.realworld.ui.shared.EmailField
 import com.walkmansit.realworld.ui.shared.PasswordField
@@ -46,6 +47,7 @@ fun LoginView(
     navController: NavController = rememberNavController(),
     navigateRegistration: () -> Unit,
     navigateFeed: (String) -> Unit,
+    toast: (String) -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
 
@@ -55,11 +57,12 @@ fun LoginView(
         when (action) {
             is LoginAction.RedirectRegistration -> navigateRegistration()
             is LoginAction.RedirectFeed -> navigateFeed(action.username)
+            is LoginAction.ShowMessage -> toast(action.text)
         }
     }
 
     RwScaffold(
-        title = "",
+        title = "Login",
         upAvailable = navController.previousBackStackEntry != null,
         onUpClicked = { navController.popBackStack() },
         snackBarHostState = snackBarHostState,

@@ -10,6 +10,7 @@ import com.walkmansit.realworld.FeedDestinationsArgs
 import com.walkmansit.realworld.domain.model.ArticleFilterType
 import com.walkmansit.realworld.domain.model.ArticlesFilter
 import com.walkmansit.realworld.domain.use_case.GetArticlesUseCase
+import com.walkmansit.realworld.domain.use_case.LogoutUseCase
 import com.walkmansit.realworld.ui.feed.ArticlePagingSource.Companion.FEED_PAGE_SIZE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -31,6 +33,7 @@ sealed interface FeedIntent {
     data object RedirectNewArticle : FeedIntent
     data class RedirectArticle(val slug: String) : FeedIntent
     data object RedirectComplete : FeedIntent
+    data object LogOut : FeedIntent
 }
 
 data class FeedUiState(
@@ -43,11 +46,13 @@ sealed class FeedNavigationEvent {
     data object Undefined : FeedNavigationEvent()
     data class RedirectArticle(val slug: String) : FeedNavigationEvent()
     data object RedirectNewArticle : FeedNavigationEvent()
+    data object RedirectLogin : FeedNavigationEvent()
 }
 
 @HiltViewModel
 class FeedViewModel @Inject constructor(
     private val getArticlesUseCase: GetArticlesUseCase,
+    private val logoutUseCase: LogoutUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -88,6 +93,7 @@ class FeedViewModel @Inject constructor(
             is FeedIntent.RedirectNewArticle -> redirectNewArticle()
             is FeedIntent.RedirectArticle -> redirectArticle(intent.slug)
             is FeedIntent.RedirectComplete -> redirectComplete()
+            is FeedIntent.LogOut -> logout()
         }
     }
 
@@ -120,5 +126,14 @@ class FeedViewModel @Inject constructor(
 
     private fun redirectComplete() {
         _uiState.update { it.copy(navEvent = FeedNavigationEvent.Undefined) }
+    }
+
+    private fun logout(){
+        viewModelScope.launch {
+            val result = logoutUseCase.invoke()
+            if (result){
+                _uiState.update { it.copy(navEvent = FeedNavigationEvent.RedirectLogin) }
+            }
+        }
     }
 }

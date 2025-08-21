@@ -1,5 +1,6 @@
 package com.walkmansit.realworld.ui.registration
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -51,6 +53,7 @@ fun RegistrationView(
     navController: NavController = rememberNavController(),
     navigateLogin: () -> Unit,
     navigateFeed: (String) -> Unit,
+    toast: (String) -> Unit,
     viewModel: RegistrationViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) = with(viewModel.store) {
@@ -59,11 +62,12 @@ fun RegistrationView(
         when (action) {
             is RegistrationAction.RedirectLogin -> navigateLogin()
             is RegistrationAction.RedirectFeed -> navigateFeed(action.username)
+            is RegistrationAction.ShowMessage -> toast(action.text)
         }
     }
 
     RwScaffold(
-        title = "",
+        title = "Registration",
         upAvailable = navController.previousBackStackEntry != null,
         onUpClicked = { navController.popBackStack() },
         snackBarHostState = snackBarHostState,

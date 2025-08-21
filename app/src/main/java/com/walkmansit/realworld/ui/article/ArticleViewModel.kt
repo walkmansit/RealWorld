@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.walkmansit.realworld.ArticleDestinationsArgs.SLUG_ARG
 import com.walkmansit.realworld.common.TextFieldState
 import com.walkmansit.realworld.domain.model.Article
-import com.walkmansit.realworld.domain.model.Tag
 import com.walkmansit.realworld.domain.use_case.EditArticleUseCase
 import com.walkmansit.realworld.domain.use_case.GetArticleUseCase
 import com.walkmansit.realworld.domain.use_case.GetTagsUseCase
@@ -26,7 +25,7 @@ sealed interface ArticleUiState {
         val title: TextFieldState = TextFieldState(),
         val description: TextFieldState = TextFieldState(),
         val body: TextFieldState = TextFieldState(),
-        val selectedTags: List<Tag> = listOf(),
+        val selectedTags: List<String> = listOf(),
     ) : ArticleUiState
     data object IsLoading : ArticleUiState
     data class HasError(val errorMsg: String) : ArticleUiState
@@ -45,7 +44,7 @@ class ArticleViewModel @Inject constructor(
     private val editArticleUseCase: EditArticleUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val _tagsFlow = MutableStateFlow<List<Tag>?>(null)
+    private val _tagsFlow = MutableStateFlow<List<String>?>(null)
     private val _articleFlow = MutableStateFlow<Article?>(null)
 
     private val _slug: String = savedStateHandle[SLUG_ARG]!!
@@ -68,7 +67,6 @@ class ArticleViewModel @Inject constructor(
             _uiState.update { ArticleUiState.IsLoading }
 
             fetchArticle()
-            fetchTags()
 
             combine(_tagsFlow.filterNotNull(), _articleFlow.filterNotNull()){
                 tag, article ->
@@ -96,18 +94,6 @@ class ArticleViewModel @Inject constructor(
                 _articleFlow.value = artRes.value
             }
         }
-    }
-
-    private suspend fun fetchTags(){
-        when (val tagRes = getTagsUseCase()) {
-            is Either.Fail -> {
-                _uiState.update { ArticleUiState.HasError("Failed to load tags") }
-            }
-            is Either.Success -> {
-                _tagsFlow.value = tagRes.value.mapIndexed { index, s -> Tag(index, s) }
-            }
-        }
-
     }
 
 //    private fun submitEditArticle() {

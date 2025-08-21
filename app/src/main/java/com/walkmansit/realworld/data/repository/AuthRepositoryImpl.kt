@@ -3,11 +3,14 @@ package com.walkmansit.realworld.data.repository
 import com.walkmansit.realworld.data.remote.ApiService
 import com.walkmansit.realworld.data.remote.response.LoginErrorResponse
 import com.walkmansit.realworld.data.remote.response.RegistrationErrorResponse
+import com.walkmansit.realworld.data.util.ModelsMapper
+import com.walkmansit.realworld.data.util.getErrorEither
 import com.walkmansit.realworld.data.util.getErrorResponse
 import com.walkmansit.realworld.data.util.toDomain
 import com.walkmansit.realworld.data.util.toLoginFailed
 import com.walkmansit.realworld.data.util.toNetworkRequest
 import com.walkmansit.realworld.data.util.toRegistrationFailed
+import com.walkmansit.realworld.domain.model.CommonError
 import com.walkmansit.realworld.domain.model.LoginFailed
 import com.walkmansit.realworld.domain.model.Profile
 import com.walkmansit.realworld.domain.model.RegistrationFailed
@@ -24,27 +27,39 @@ import java.io.IOException
 class AuthRepositoryImpl(
     private val apiService: ApiService
 ) : AuthRepository {
-    override suspend fun login(userCredentials: UserLoginCredentials): Either<LoginFailed, User> {
+    override suspend fun login(userCredentials: UserLoginCredentials): Either<Either<CommonError,LoginFailed>, User> {
         return try {
             val response = apiService.loginUser(userCredentials.toNetworkRequest())
             Either.success(response.toDomain())
         } catch (e: IOException) {
-            Either.fail(LoginFailed(commonError = e.message.orEmpty()))
+            Either.fail(Either.fail(CommonError(e.message.orEmpty())))
         } catch (e: HttpException) {
-            val errorResponse = getErrorResponse<LoginErrorResponse>(e.response()?.errorBody()?.string() ?: "")
-            Either.fail(errorResponse.toLoginFailed())
+            val body = e.response()?.errorBody()?.string() ?: ""
+            val mapper = object : ModelsMapper<LoginErrorResponse, LoginFailed> {
+                override fun map(data: LoginErrorResponse): LoginFailed {
+                    return data.toLoginFailed()
+                }
+            }
+            return Either.fail(getErrorEither<LoginErrorResponse, LoginFailed>(body, mapper))
         }
     }
 
-    override suspend fun register(userCredentials: UserRegisterCredentials): Either<RegistrationFailed, User> {
+    override suspend fun register(userCredentials: UserRegisterCredentials): Either<Either<CommonError,RegistrationFailed>, User> {
         return try {
             val response = apiService.registerUser(userCredentials.toNetworkRequest())
             Either.success(response.toDomain())
         } catch (e: IOException) {
-            Either.fail(RegistrationFailed(commonError = e.message.orEmpty()))
+            Either.fail(Either.fail(CommonError( e.message.orEmpty())))
         } catch (e: HttpException) {
-            val errorResponse = getErrorResponse<RegistrationErrorResponse>(e.response()?.errorBody()?.string() ?: "")
-            Either.fail(errorResponse.toRegistrationFailed())
+            val body = e.response()?.errorBody()?.string() ?: ""
+            val mapper = object : ModelsMapper<RegistrationErrorResponse, RegistrationFailed> {
+                    override fun map(data: RegistrationErrorResponse): RegistrationFailed {
+                        return data.toRegistrationFailed()
+                    }
+                }
+            return Either.fail(getErrorEither<RegistrationErrorResponse, RegistrationFailed>(body, mapper))
+//            val errorResponse = getErrorResponse<RegistrationErrorResponse>(e.response()?.errorBody()?.string() ?: "")
+//            Either.fail(Either.success(errorResponse.toRegistrationFailed()))
         }
 
     }
@@ -59,5 +74,4 @@ class AuthRepositoryImpl(
             Either.fail(RequestFailed(commonError = e.message.orEmpty()))
         }
     }
-
 }

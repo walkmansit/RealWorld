@@ -3,10 +3,13 @@ package com.walkmansit.realworld.ui.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkmansit.realworld.common.TextFieldState
+import com.walkmansit.realworld.domain.model.CommonError
 import com.walkmansit.realworld.domain.model.LoginFailed
 import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.use_case.LoginUseCase
 import com.walkmansit.realworld.domain.util.Either
+import com.walkmansit.realworld.ui.registration.RegistrationAction
+import com.walkmansit.realworld.ui.registration.RegistrationState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.Container
@@ -29,7 +32,7 @@ sealed interface LoginIntent : MVIIntent {
     data class UpdateEmail(val email: String) : LoginIntent
     data class UpdatePassword(val password: String) : LoginIntent
     data object SubmitStart : LoginIntent
-    data class SubmitComplete(val result: Either<LoginFailed, User>) : LoginIntent
+    data class SubmitComplete(val result: Either<Either<CommonError,LoginFailed>, User>) : LoginIntent
     data object RedirectRegistration : LoginIntent
 }
 
@@ -43,6 +46,7 @@ sealed interface LoginState : MVIState {
 sealed class LoginAction : MVIAction {
     data class RedirectFeed(val username: String) : LoginAction()
     data object RedirectRegistration : LoginAction()
+    data class ShowMessage(val text: String) : LoginAction()
 }
 
 private typealias Ctx = PipelineContext<LoginState, LoginIntent, LoginAction>
@@ -96,16 +100,26 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun Ctx.submitComplete(result: Either<LoginFailed, User>){
+    private suspend fun Ctx.submitComplete(result: Either<Either<CommonError,LoginFailed>, User>){
         updateStateOrThrow<LoginState.LoadingOnSubmit, _> {
             when (result) {
                 is Either.Fail -> {
-                    with(fields){
-                        val newFields = copy(
-                            email = email.copy(error = result.value.emailError),
-                            password = password.copy(error = result.value.passwordError),
-                        )
-                        LoginState.Content(newFields)
+                    val fail = result.value
+                    when(fail){
+                        is Either.Fail -> {
+                            action(LoginAction.ShowMessage(fail.value.error))
+                            LoginState.Content(fields)
+                        }
+                        is Either.Success -> {
+                            with(fields){
+                                val newFields = copy(
+                                    email = email.copy(error = fail.value.emailError),
+                                    password = password.copy(error = fail.value.passwordError),
+                                )
+                                LoginState.Content(newFields)
+                            }
+
+                        }
                     }
                 }
                 is Either.Success -> {

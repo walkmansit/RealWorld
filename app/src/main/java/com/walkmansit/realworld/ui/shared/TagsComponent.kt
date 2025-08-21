@@ -22,15 +22,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.unit.dp
-import com.walkmansit.realworld.domain.model.Tag
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TagsComponent(
-    tags: List<Tag>,
+    tags: List<String>,
     showSearch: Boolean = false,
-    onDelete: (tag: Tag) -> Unit = {},
-    onEdit: () -> Unit = {},
+    onDelete: (tag: String) -> Unit = {},
+    onShowSearch: () -> Unit = {},
 ){
 
     FlowRow(
@@ -41,19 +40,39 @@ fun TagsComponent(
             .padding(2.dp)
     ) {
         tags.forEach { tag ->
-            TextChipWithIcon(tag,showSearch, onDelete)
+            TextChipWithIcon(tag, showSearch, onDelete)
         }
         if (showSearch) {
-            TextChipEdit("Edit", onEdit)
+            TextChipEdit("Edit", onShowSearch)
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TagsComponentSimple(
+    tags: List<String>,
+    onDelete: (tag: String) -> Unit = {},
+){
+
+    FlowRow(
+        maxLines = 2,
+        horizontalArrangement = Arrangement.Start, // Arrangement.spacedBy(2.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .padding(2.dp)
+    ) {
+        tags.forEach { tag ->
+            TextChipWithIcon(tag,false, onDelete)
         }
     }
 }
 
 @Composable
 fun TextChipWithIcon(
-    tag: Tag,
+    tag: String,
     canDelete: Boolean,
-    onDelete: (tag: Tag) -> Unit,
+    onDelete: (tag: String) -> Unit,
 ) {
     val shape = CircleShape
     Row(
@@ -80,14 +99,14 @@ fun TextChipWithIcon(
             modifier = Modifier
                 .padding(all = 16.dp),
             style = MaterialTheme.typography.bodyMedium,
-            text = tag.value,
+            text = tag,
             color = Color.Black
         )
-        if (canDelete)
-        {
+        if (canDelete) {
             IconButton(onClick = { onDelete(tag) }) {
                 Icon(imageVector = Icons.Filled.Done, "delete tag")
-            }}
+            }
+        }
     }
 }
 

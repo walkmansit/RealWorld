@@ -1,6 +1,6 @@
 [versions]
 routeArgs = "2.5.0"
-agp = "8.5.2"
+agp = "8.12.1"
 constraintlayoutCompose = "1.1.1"
 converterGson = "2.11.0"
 datastorePreferences = "1.1.3"

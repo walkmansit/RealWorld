@@ -1,5 +1,6 @@
 package com.walkmansit.realworld.domain.use_case
 
+import com.walkmansit.realworld.domain.model.CommonError
 import com.walkmansit.realworld.domain.model.LoginFailed
 import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.model.UserLoginCredentials
@@ -12,14 +13,14 @@ class LoginUseCase @Inject constructor(
     private val authRepository: AuthRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
 ) {
-    suspend operator fun invoke(email: String, password: String): Either<LoginFailed, User> {
+    suspend operator fun invoke(email: String, password: String): Either<Either<CommonError,LoginFailed>, User> {
         val emailError = if (email.isBlank()) "email cannot be blank" else null
         val passwordError = if (password.isBlank()) "password cannot be blank" else null
 
         return if (emailError == null && passwordError == null) {
             authRepository.login(UserLoginCredentials(email, password)).also {
-                if (it is Either.Success) userPreferencesRepository.updateUser(it.value)
+                if (it is Either.Success) userPreferencesRepository.updateUser(Either.success(it.value))
             }
-        } else Either.fail(LoginFailed(passwordError, emailError))
+        } else Either.fail(Either.success(LoginFailed(passwordError, emailError)))
     }
 }

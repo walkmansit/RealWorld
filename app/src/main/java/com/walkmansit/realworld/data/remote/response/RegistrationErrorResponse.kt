@@ -1,7 +1,8 @@
 package com.walkmansit.realworld.data.remote.response
 
 data class RegistrationErrorResponse(
-    val errors: RegistrationErrorBody,
+    val error: String?,
+    val user: RegistrationErrorBody,
 )
 
 data class RegistrationErrorBody(

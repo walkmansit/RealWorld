@@ -3,6 +3,7 @@ package com.walkmansit.realworld.ui.registration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkmansit.realworld.common.TextFieldState
+import com.walkmansit.realworld.domain.model.CommonError
 import com.walkmansit.realworld.domain.model.RegistrationFailed
 import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.use_case.RegistrationUseCase
@@ -25,13 +26,14 @@ sealed interface RegistrationIntent : MVIIntent {
     data class UpdateEmail(val email: String) : RegistrationIntent
     data class UpdatePassword(val password: String) : RegistrationIntent
     data object Submit : RegistrationIntent
-    data class SubmitComplete(val result: Either<RegistrationFailed, User>) : RegistrationIntent
+    data class SubmitComplete(val result: Either<Either<CommonError, RegistrationFailed>, User>) : RegistrationIntent
     data object RedirectLogin : RegistrationIntent
 }
 
 sealed interface RegistrationAction : MVIAction {
     data object RedirectLogin : RegistrationAction
     data class RedirectFeed(val username: String) : RegistrationAction
+    data class ShowMessage(val text: String) : RegistrationAction
 }
 
 data class RegistrationFields(
@@ -109,17 +111,27 @@ class RegistrationViewModel @Inject constructor(
     }
 
 
-    private suspend fun Ctx.submitComplete(result: Either<RegistrationFailed, User>){
+    private suspend fun Ctx.submitComplete(result: Either<Either<CommonError, RegistrationFailed>, User>){
         updateStateOrThrow<RegistrationState.LoadingOnSubmit, _> {
             when(result){
+
                 is Either.Fail -> {
-                    with(fields){
-                        val newFields = copy(
-                            username = username.copy(error = result.value.usernameError),
-                            email = email.copy(error = result.value.emailError),
-                            password = password.copy(error = result.value.passwordError),
-                        )
-                        RegistrationState.Content(newFields)
+                    val fail = result.value
+                    when (fail){
+                        is Either.Fail -> {
+                            action(RegistrationAction.ShowMessage(fail.value.error))
+                            RegistrationState.Content(fields)
+                        }
+                        is Either.Success -> {
+                            with(fields) {
+                                val newFields = copy(
+                                    username = username.copy(error = fail.value.usernameError),
+                                    email = email.copy(error = fail.value.emailError),
+                                    password = password.copy(error = fail.value.passwordError),
+                                )
+                                RegistrationState.Content(newFields)
+                            }
+                        }
                     }
                 }
                 is Either.Success -> {

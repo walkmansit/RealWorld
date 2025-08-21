@@ -52,6 +52,7 @@ fun NavGraph(
                 modifier,
                 navigateLogin = navActions::navigateToLogin,
                 navigateFeed = navActions::navigateToFeed,
+                toast = navActions::toast,
             )
         }
 
@@ -60,6 +61,7 @@ fun NavGraph(
                 modifier,
                 navigateRegistration = navActions::navigateToRegistration,
                 navigateFeed = navActions::navigateToFeed,
+                toast = navActions::toast
                 )
         }
 
@@ -72,7 +74,8 @@ fun NavGraph(
             FeedView(
                 modifier,
                 navigateArticle = navActions::navigateToArticle,
-                navigateNewArticle = navActions::navigateToNewArticle
+                navigateNewArticle = navActions::navigateToNewArticle,
+                navigateLogin = navActions::navigateToLogin,
             )
         }
 

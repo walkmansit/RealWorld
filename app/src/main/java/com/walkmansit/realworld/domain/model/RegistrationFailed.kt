@@ -4,5 +4,4 @@ data class RegistrationFailed(
     val usernameError: String? = null,
     val passwordError: String? = null,
     val emailError: String? = null,
-    val commonError: String? = null,
 )
