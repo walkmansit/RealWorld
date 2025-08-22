@@ -12,11 +12,33 @@ plugins {
     id("kotlin-parcelize")
 }
 
+/*val localProperties = java.util.Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { stream ->
+        localProperties.load(stream)
+    }
+} else {
+    println("local.properties file not found. CI build? Using empty defaults or environment variables.")
+}
+
+fun getLocalPropertyOrFail(key: String): String {
+    return localProperties.getProperty(key)
+        ?: throw GradleException("Property '$key' not found in local.properties. Required for build.")
+}
+
+// === Helper function to get a property safely ===
+// This is a useful pattern to avoid repeating null checks.
+fun getLocalProperty(key: String, default: String = ""): String {
+    return localProperties.getProperty(key, default)
+}*/
+
 android {
     namespace = "com.walkmansit.realworld"
     compileSdk = 36
 
     defaultConfig {
+
         applicationId = "com.walkmansit.realworld"
         minSdk = 29
         targetSdk = 34
@@ -30,7 +52,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
+        }
         release {
+            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -47,6 +73,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true   // ensure generation
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"

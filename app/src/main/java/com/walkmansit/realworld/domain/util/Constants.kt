@@ -3,7 +3,6 @@ package com.walkmansit.realworld.domain.util
 import androidx.datastore.preferences.core.stringPreferencesKey
 
 object Constants {
-    const val BASE_URL = "http://10.8.1.4:8080/api/v1/"
     const val USER_PREFERENCES_NAME = "USER_PREFERENCES"
 
     object PreferencesKeys {
