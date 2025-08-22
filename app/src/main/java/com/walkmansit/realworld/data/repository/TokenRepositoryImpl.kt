@@ -4,7 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.walkmansit.realworld.domain.repository.TokenRepository
-import com.walkmansit.realworld.domain.util.Constants.PreferencesKeys.USER_TOKEN
+import com.walkmansit.realworld.data.util.Constants.PreferencesKeys.USER_TOKEN
 import kotlinx.coroutines.flow.first
 
 class TokenRepositoryImpl(

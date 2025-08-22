@@ -1,7 +1,7 @@
 package com.walkmansit.realworld.data.repository
 
 import com.walkmansit.realworld.data.remote.ApiService
-import com.walkmansit.realworld.data.remote.response.NewArticleErrorResponse
+import com.walkmansit.realworld.data.remote.response.NewArticleFailedResponse
 import com.walkmansit.realworld.data.util.getErrorResponse
 import com.walkmansit.realworld.data.util.toDomain
 import com.walkmansit.realworld.data.util.toNetworkRequest
@@ -84,7 +84,7 @@ class ArticleRepositoryImpl(
         } catch (e: IOException) {
             Either.fail(NewArticleFailed(commonError = e.message.orEmpty()))
         } catch (e: HttpException) {
-            val errorResponse = getErrorResponse<NewArticleErrorResponse>(e.response()?.errorBody()?.string() ?: "")
+            val errorResponse = getErrorResponse<NewArticleFailedResponse>(e.response()?.errorBody()?.string() ?: "")
             Either.fail(errorResponse.toNewArticleFailed())
         }
     }

@@ -11,10 +11,10 @@ import com.walkmansit.realworld.data.remote.response.ArticlesResponse
 import com.walkmansit.realworld.data.remote.response.AuthResponse
 import com.walkmansit.realworld.data.remote.response.AuthorResponse
 import com.walkmansit.realworld.data.remote.response.BaseErrorResponse
-import com.walkmansit.realworld.data.remote.response.LoginErrorResponse
-import com.walkmansit.realworld.data.remote.response.NewArticleErrorResponse
+import com.walkmansit.realworld.data.remote.response.LoginFailedResponse
+import com.walkmansit.realworld.data.remote.response.NewArticleFailedResponse
 import com.walkmansit.realworld.data.remote.response.ProfileResponse
-import com.walkmansit.realworld.data.remote.response.RegistrationErrorResponse
+import com.walkmansit.realworld.data.remote.response.RegistrationFailedResponse
 import com.walkmansit.realworld.data.remote.response.SingleArticle
 import com.walkmansit.realworld.data.remote.response.SingleArticleResponse
 import com.walkmansit.realworld.data.remote.response.TagsResponse
@@ -82,18 +82,18 @@ fun ProfileResponse.toDomain() = Profile(
     following = profile.following,
 )
 
-fun RegistrationErrorResponse.toRegistrationFailed() = RegistrationFailed(
+fun RegistrationFailedResponse.toRegistrationFailed() = RegistrationFailed(
     usernameError = user.username.joinToString(", "),
     emailError = user.email.joinToString(", "),
     passwordError = user.password.joinToString(", "),
 )
 
-fun LoginErrorResponse.toLoginFailed() = LoginFailed(
+fun LoginFailedResponse.toLoginFailed() = LoginFailed(
     emailError = user.email.joinToString(", "),
     passwordError = user.password.joinToString(", "),
 )
 
-fun NewArticleErrorResponse.toNewArticleFailed() = NewArticleFailed(
+fun NewArticleFailedResponse.toNewArticleFailed() = NewArticleFailed(
     titleError = errors.title.joinToString(", "),
     descriptionError = errors.description.joinToString(", "),
     bodyError = errors.body.joinToString(", "),

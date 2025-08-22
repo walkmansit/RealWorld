@@ -1,11 +1,10 @@
 package com.walkmansit.realworld.data.repository
 
 import com.walkmansit.realworld.data.remote.ApiService
-import com.walkmansit.realworld.data.remote.response.LoginErrorResponse
-import com.walkmansit.realworld.data.remote.response.RegistrationErrorResponse
+import com.walkmansit.realworld.data.remote.response.LoginFailedResponse
+import com.walkmansit.realworld.data.remote.response.RegistrationFailedResponse
 import com.walkmansit.realworld.data.util.ModelsMapper
 import com.walkmansit.realworld.data.util.getErrorEither
-import com.walkmansit.realworld.data.util.getErrorResponse
 import com.walkmansit.realworld.data.util.toDomain
 import com.walkmansit.realworld.data.util.toLoginFailed
 import com.walkmansit.realworld.data.util.toNetworkRequest
@@ -35,12 +34,12 @@ class AuthRepositoryImpl(
             Either.fail(Either.fail(CommonError(e.message.orEmpty())))
         } catch (e: HttpException) {
             val body = e.response()?.errorBody()?.string() ?: ""
-            val mapper = object : ModelsMapper<LoginErrorResponse, LoginFailed> {
-                override fun map(data: LoginErrorResponse): LoginFailed {
+            val mapper = object : ModelsMapper<LoginFailedResponse, LoginFailed> {
+                override fun map(data: LoginFailedResponse): LoginFailed {
                     return data.toLoginFailed()
                 }
             }
-            return Either.fail(getErrorEither<LoginErrorResponse, LoginFailed>(body, mapper))
+            return Either.fail(getErrorEither<LoginFailedResponse, LoginFailed>(body, mapper))
         }
     }
 
@@ -52,12 +51,12 @@ class AuthRepositoryImpl(
             Either.fail(Either.fail(CommonError( e.message.orEmpty())))
         } catch (e: HttpException) {
             val body = e.response()?.errorBody()?.string() ?: ""
-            val mapper = object : ModelsMapper<RegistrationErrorResponse, RegistrationFailed> {
-                    override fun map(data: RegistrationErrorResponse): RegistrationFailed {
+            val mapper = object : ModelsMapper<RegistrationFailedResponse, RegistrationFailed> {
+                    override fun map(data: RegistrationFailedResponse): RegistrationFailed {
                         return data.toRegistrationFailed()
                     }
                 }
-            return Either.fail(getErrorEither<RegistrationErrorResponse, RegistrationFailed>(body, mapper))
+            return Either.fail(getErrorEither<RegistrationFailedResponse, RegistrationFailed>(body, mapper))
 //            val errorResponse = getErrorResponse<RegistrationErrorResponse>(e.response()?.errorBody()?.string() ?: "")
 //            Either.fail(Either.success(errorResponse.toRegistrationFailed()))
         }

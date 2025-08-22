@@ -16,7 +16,7 @@ import com.walkmansit.realworld.domain.repository.ArticleRepository
 import com.walkmansit.realworld.domain.repository.AuthRepository
 import com.walkmansit.realworld.domain.repository.TokenRepository
 import com.walkmansit.realworld.domain.repository.UserPreferencesRepository
-import com.walkmansit.realworld.domain.util.Constants
+import com.walkmansit.realworld.data.util.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

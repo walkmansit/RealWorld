@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import com.walkmansit.realworld.domain.model.EmptyUser
 import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.repository.UserPreferencesRepository
-import com.walkmansit.realworld.domain.util.Constants
+import com.walkmansit.realworld.data.util.Constants
 import com.walkmansit.realworld.domain.util.Either
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
