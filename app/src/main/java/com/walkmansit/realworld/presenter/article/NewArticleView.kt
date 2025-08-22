@@ -87,7 +87,7 @@ fun NewArticleView(
         onUpClicked = { navController.popBackStack() },
         snackBarHostState = snackBarHostState,
         fab = {
-            FloatingActionButton(onClick = { articleViewModel.store.intent(NewArticleIntent.Submit) }) {
+            FloatingActionButton(onClick = { intent(NewArticleIntent.Submit) }) {
                 Icon(Icons.Filled.Done, "Submit")
             }
         },
@@ -195,7 +195,7 @@ fun IntentReceiver<NewArticleIntent>.NewArticleViewContent(content: NewArticleFi
         Spacer(modifier = Modifier.height(24.dp))
 
         with(tagsViewModel.store){
-            val tagState by tagsViewModel.store.subscribe()
+            val tagState by subscribe()
             TagsViewContainer(tagState)
         }
 

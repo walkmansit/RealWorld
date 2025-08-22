@@ -3,6 +3,7 @@ package com.walkmansit.realworld.data.repository
 import com.walkmansit.realworld.data.remote.ApiService
 import com.walkmansit.realworld.data.remote.response.LoginFailedResponse
 import com.walkmansit.realworld.data.remote.response.RegistrationFailedResponse
+import com.walkmansit.realworld.data.repository.NetworkErrorMessages.SERVICE_UNAVAILABLE
 import com.walkmansit.realworld.data.util.ModelsMapper
 import com.walkmansit.realworld.data.util.getErrorEither
 import com.walkmansit.realworld.data.util.toDomain
@@ -22,6 +23,9 @@ import com.walkmansit.realworld.domain.util.Either
 import retrofit2.HttpException
 import java.io.IOException
 
+object NetworkErrorMessages {
+    const val SERVICE_UNAVAILABLE = "Service unavailable"
+}
 
 class AuthRepositoryImpl(
     private val apiService: ApiService
@@ -31,8 +35,8 @@ class AuthRepositoryImpl(
             val response = apiService.loginUser(userCredentials.toNetworkRequest())
             Either.success(response.toDomain())
         } catch (e: IOException) {
-            Either.fail(Either.fail(CommonError(e.message.orEmpty())))
-        } catch (e: HttpException) {
+            Either.fail(Either.fail(CommonError(SERVICE_UNAVAILABLE)))
+        }  catch (e: HttpException) {
             val body = e.response()?.errorBody()?.string() ?: ""
             val mapper = object : ModelsMapper<LoginFailedResponse, LoginFailed> {
                 override fun map(data: LoginFailedResponse): LoginFailed {
@@ -48,8 +52,8 @@ class AuthRepositoryImpl(
             val response = apiService.registerUser(userCredentials.toNetworkRequest())
             Either.success(response.toDomain())
         } catch (e: IOException) {
-            Either.fail(Either.fail(CommonError( e.message.orEmpty())))
-        } catch (e: HttpException) {
+            Either.fail(Either.fail(CommonError( SERVICE_UNAVAILABLE)))
+        }  catch (e: HttpException) {
             val body = e.response()?.errorBody()?.string() ?: ""
             val mapper = object : ModelsMapper<RegistrationFailedResponse, RegistrationFailed> {
                     override fun map(data: RegistrationFailedResponse): RegistrationFailed {
@@ -68,7 +72,7 @@ class AuthRepositoryImpl(
             val response = apiService.getProfile(username)
             Either.success(response.toDomain())
         } catch (e: IOException) {
-            Either.fail(RequestFailed(commonError = e.message.orEmpty()))
+            Either.fail(RequestFailed(commonError = SERVICE_UNAVAILABLE))
         } catch (e: HttpException) {
             Either.fail(RequestFailed(commonError = e.message.orEmpty()))
         }

@@ -1,5 +1,6 @@
 package com.walkmansit.realworld.presenter.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkmansit.realworld.presenter.components.TextFieldState
@@ -9,6 +10,7 @@ import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.use_case.LoginUseCase
 import com.walkmansit.realworld.domain.util.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.MVIAction
@@ -131,12 +133,13 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun Ctx.submitStart(){
         updateStateOrThrow<LoginState.Content, _> {
-            val loginResult = loginUseCase(
-                email = fields.email.text,
-                password = fields.password.text
-            )
-            intent(LoginIntent.SubmitComplete(loginResult))
-
+            viewModelScope.launch {
+                val loginResult = loginUseCase(
+                    email = fields.email.text,
+                    password = fields.password.text
+                )
+                intent(LoginIntent.SubmitComplete(loginResult))
+            }
             LoginState.LoadingOnSubmit()
         }
     }

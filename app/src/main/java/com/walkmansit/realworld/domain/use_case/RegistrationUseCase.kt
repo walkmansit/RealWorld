@@ -7,7 +7,9 @@ import com.walkmansit.realworld.domain.model.UserRegisterCredentials
 import com.walkmansit.realworld.domain.repository.AuthRepository
 import com.walkmansit.realworld.domain.repository.UserPreferencesRepository
 import com.walkmansit.realworld.domain.util.Either
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class RegistrationUseCase @Inject constructor(
@@ -19,19 +21,21 @@ class RegistrationUseCase @Inject constructor(
         email: String,
         password: String
     ): Either<Either<CommonError, RegistrationFailed>, User> {
+        return withContext(Dispatchers.IO) {
 
-        val usernameError = if (username.isBlank()) "Username cannot be blank" else null
-        val emailError = if (email.isBlank()) "Email cannot be blank" else null
-        val passwordError = if (password.isBlank()) "Password cannot be blank" else null
+            val usernameError = if (username.isBlank()) "Username cannot be blank" else null
+            val emailError = if (email.isBlank()) "Email cannot be blank" else null
+            val passwordError = if (password.isBlank()) "Password cannot be blank" else null
 
-        delay(2000)
-        return if (usernameError == null && emailError == null && passwordError == null) {
-            repository.register(UserRegisterCredentials(username, email, password)).also {
-                if (it is Either.Success) userPreferencesRepository.updateUser(Either.success(it.value))
-            }
-        } else Either.fail(Either.success(
-            RegistrationFailed(usernameError, emailError, passwordError))
-        )
-
+            if (usernameError == null && emailError == null && passwordError == null) {
+                repository.register(UserRegisterCredentials(username, email, password)).also {
+                    if (it is Either.Success) userPreferencesRepository.updateUser(Either.success(it.value))
+                }
+            } else Either.fail(
+                Either.success(
+                    RegistrationFailed(usernameError, emailError, passwordError)
+                )
+            )
+        }
     }
 }

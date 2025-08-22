@@ -108,6 +108,8 @@ class FeedViewModel @Inject constructor(
             ArticlePagingSource(
                 getArticlesUseCase,
                 filter,
+                viewModelScope,
+
             )
         }.flow.cachedIn(viewModelScope)
     }

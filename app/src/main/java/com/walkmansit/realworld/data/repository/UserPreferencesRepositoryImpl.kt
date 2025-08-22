@@ -12,11 +12,15 @@ import com.walkmansit.realworld.domain.util.Either
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
 import java.io.IOException
+import kotlin.concurrent.withLock
 
 class UserPreferencesRepositoryImpl(
     private val dataStore: DataStore<Preferences>
 ) : UserPreferencesRepository {
+
+    val lock = _root_ide_package_.kotlinx.atomicfu.locks.ReentrantLock()
 
     override val userFlow: Flow<Either<EmptyUser, User>>
         get() = dataStore.data

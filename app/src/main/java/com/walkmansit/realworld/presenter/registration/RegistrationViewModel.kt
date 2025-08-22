@@ -9,6 +9,7 @@ import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.use_case.RegistrationUseCase
 import com.walkmansit.realworld.domain.util.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.MVIAction
@@ -144,12 +145,14 @@ class RegistrationViewModel @Inject constructor(
 
     private suspend fun Ctx.submit(){
         updateStateOrThrow<RegistrationState.Content, _> {
-            val regUserResponse = registrationUseCase(
-                fields.username.text,
-                fields.email.text,
-                fields.password.text,
-            )
-            intent(RegistrationIntent.SubmitComplete(regUserResponse))
+            viewModelScope.launch {
+                val regUserResponse = registrationUseCase(
+                    fields.username.text,
+                    fields.email.text,
+                    fields.password.text,
+                )
+                intent(RegistrationIntent.SubmitComplete(regUserResponse))
+            }
 
             RegistrationState.LoadingOnSubmit(fields)
         }

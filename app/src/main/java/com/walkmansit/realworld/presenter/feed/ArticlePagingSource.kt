@@ -6,10 +6,13 @@ import com.walkmansit.realworld.domain.model.Article
 import com.walkmansit.realworld.domain.model.ArticlesFilter
 import com.walkmansit.realworld.domain.use_case.GetArticlesUseCase
 import com.walkmansit.realworld.domain.util.Either
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class ArticlePagingSource(
     private val getArticlesUseCase: GetArticlesUseCase,
     private val filter: ArticlesFilter,
+    private val scope: CoroutineScope,
 ) : PagingSource<Int, Article>() {
 
     companion object {
@@ -31,7 +34,7 @@ class ArticlePagingSource(
         filter.limit = params.loadSize
         filter.offset = position
 
-        return when(val resp = getArticlesUseCase(filter)){
+        when(val resp = getArticlesUseCase(filter)){
             is Either.Success -> {
                 val nextKey = if (resp.value.isEmpty()) {
                     null
@@ -39,13 +42,13 @@ class ArticlePagingSource(
                     position + resp.value.size
                 }
 
-                LoadResult.Page(
+                return LoadResult.Page(
                     resp.value,
                     prevKey = if (position == STARTING_PAGE_INDEX) null else position - 1,
                     nextKey = nextKey,
                 )
             }
-            is Either.Fail -> LoadResult.Error(Exception())
+            is Either.Fail -> {return LoadResult.Error(Exception())}
         }
     }
 

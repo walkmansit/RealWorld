@@ -9,6 +9,7 @@ import com.walkmansit.realworld.domain.use_case.GetTagsUseCase
 import com.walkmansit.realworld.domain.use_case.NewArticleUseCase
 import com.walkmansit.realworld.domain.util.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.MVIAction
@@ -138,14 +139,16 @@ class NewArticleViewModel @Inject constructor(
     private suspend fun Ctx.submitNewArticle() {
         updateStateOrThrow<NewArticleState.Content, _> {
             with(content){
-                val newArticleResponse = newArticleUseCase(
-                    title = title.text,
-                    description = description.text,
-                    body = body.text,
-                    tags = listOf(),
-                )
+                viewModelScope.launch {
+                    val newArticleResponse = newArticleUseCase(
+                        title = title.text,
+                        description = description.text,
+                        body = body.text,
+                        tags = listOf(),
+                    )
 
-                intent(NewArticleIntent.SubmitComplete(newArticleResponse))
+                    intent(NewArticleIntent.SubmitComplete(newArticleResponse))
+                }
             }
             NewArticleState.LoadingOnSubmit(content)
         }

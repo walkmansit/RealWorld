@@ -6,6 +6,7 @@ import com.walkmansit.realworld.presenter.components.TextFieldState
 import com.walkmansit.realworld.domain.use_case.GetTagsUseCase
 import com.walkmansit.realworld.domain.util.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.MVIAction
@@ -170,8 +171,9 @@ class TagsViewModel @Inject constructor(
                 }
         }
 
-        private suspend fun TagsCtx.loadTags(){
-                intent(TagsIntent.TagsLoaded(getTagsUseCase()))
+        private fun TagsCtx.loadTags(){
+                viewModelScope.launch {
+                        intent(TagsIntent.TagsLoaded(getTagsUseCase()))
+                }
         }
-
 }
