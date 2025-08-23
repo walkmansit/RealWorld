@@ -1,0 +1,21 @@
+root = true
+
+[*.{kt,kts}]
+# Общие настройки
+indent_size = 4
+indent_style = space
+max_line_length = 120
+ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,^
+
+# Проверка имён функций (camelCase)
+# KtLint проверяет только обычные функции
+# Composable-функции лучше подавлять локально через @Suppress("FunctionName")
+
+# Если нужно отключить правило глобально:
+# ktlint_function_naming = disabled
+
+# Другие полезные правила
+ktlint_no_wildcard_imports = enabled
+ktlint_no_consecutive_blank_lines = enabled
+ktlint_no_trailing_spaces = enabled
+ktlint_no_unit_return = enabled

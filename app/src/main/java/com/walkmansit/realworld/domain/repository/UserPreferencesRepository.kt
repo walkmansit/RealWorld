@@ -7,5 +7,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserPreferencesRepository {
     val userFlow: Flow<Either<EmptyUser, User>>
+
     suspend fun updateUser(user: Either<EmptyUser, User>)
 }

@@ -36,7 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.walkmansit.realworld.domain.model.ArticleFilterType
 import com.walkmansit.realworld.presenter.article.PaginatedLazyColumn
-import com.walkmansit.realworld.presenter.feed.MAP.FILTER_MAPPING
+import com.walkmansit.realworld.presenter.feed.MAP.filterMapping
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,34 +48,32 @@ fun FeedView(
     navigateNewArticle: () -> Unit,
     navigateLogin: () -> Unit,
     viewModel: FeedViewModel = hiltViewModel(),
-    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-
     Log.d("FeedView", "FeedView recomposition")
 
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
             when (event.navEvent) {
                 is FeedNavigationEvent.RedirectArticle ->
-                {
-                    navigateArticle(event.navEvent.slug)
-                    viewModel.onIntent(FeedIntent.RedirectComplete)
-                }
+                    {
+                        navigateArticle(event.navEvent.slug)
+                        viewModel.onIntent(FeedIntent.RedirectComplete)
+                    }
                 is FeedNavigationEvent.RedirectNewArticle ->
-                {
-                    navigateNewArticle()
-                    viewModel.onIntent(FeedIntent.RedirectComplete)
-                }
+                    {
+                        navigateNewArticle()
+                        viewModel.onIntent(FeedIntent.RedirectComplete)
+                    }
                 is FeedNavigationEvent.RedirectLogin ->
-                {
-                    navigateLogin()
-                    viewModel.onIntent(FeedIntent.RedirectComplete)
-                }
+                    {
+                        navigateLogin()
+                        viewModel.onIntent(FeedIntent.RedirectComplete)
+                    }
                 is FeedNavigationEvent.Undefined -> { }
             }
         }
     }
-
 
     // State to track the scroll position
 //    val listState = rememberLazyListState()
@@ -91,25 +89,25 @@ fun FeedView(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
+                colors =
+                    topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                    ),
                 title = {
                     ArticleFilterMenu(
                         modifier,
-                        uiState.selectedFilter
+                        uiState.selectedFilter,
                     ) { viewModel.onIntent(FeedIntent.LogOut) }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.onIntent(FeedIntent.LogOut) }) {
                         Icon(
                             imageVector = Icons.Filled.AirlineStops,
-                            contentDescription = "Logout"
+                            contentDescription = "Logout",
                         )
                     }
                 },
-
             )
         },
         snackbarHost = { SnackbarHost(snackBarHostState) },
@@ -117,17 +115,17 @@ fun FeedView(
             FloatingActionButton(onClick = { viewModel.onIntent(FeedIntent.RedirectNewArticle) }) {
                 Icon(Icons.Filled.Done, "Submit")
             }
-        }
+        },
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             Column {
                 PaginatedLazyColumn(
                     modifier,
                     viewModel.articlesResult,
-                    onArticleClick = {  article ->
+                    onArticleClick = { article ->
                         viewModel.onIntent(FeedIntent.RedirectArticle(article.slug))
                     },
-                    {}
+                    {},
 //                    listState = listState,
 //                    isLoading = isLoading
                 )
@@ -141,32 +139,31 @@ fun ArticleFilterMenu(
     modifier: Modifier,
     selectedFilter: ArticleFilterType,
     onChangeFilter: (ArticleFilterType) -> Unit,
-){
-
+) {
     var expanded by remember { mutableStateOf(false) }
     Box(
-        modifier = modifier.padding(16.dp)
+        modifier = modifier.padding(16.dp),
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = { expanded = !expanded }) {
                 Icon(Icons.Filled.ArrowDropDown, contentDescription = "More options")
             }
-            Text(FILTER_MAPPING[selectedFilter]!!)
+            Text(filterMapping[selectedFilter]!!)
         }
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
         ) {
             ArticleFilterType.entries.toTypedArray().onEach {
                 DropdownMenuItem(
-                    text = { Text(FILTER_MAPPING[it]!!) },
+                    text = { Text(filterMapping[it]!!) },
                     onClick = {
                         onChangeFilter(it)
                         expanded = false
-                    }
+                    },
                 )
             }
         }
@@ -174,9 +171,10 @@ fun ArticleFilterMenu(
 }
 
 object MAP {
-    val FILTER_MAPPING: Map<ArticleFilterType, String> = mapOf(
-        ArticleFilterType.MyArticles to "My Articles",
-        ArticleFilterType.Feed to "Feed",
-        ArticleFilterType.Explore to "Explore",
-    )
+    val filterMapping: Map<ArticleFilterType, String> =
+        mapOf(
+            ArticleFilterType.MyArticles to "My Articles",
+            ArticleFilterType.Feed to "Feed",
+            ArticleFilterType.Explore to "Explore",
+        )
 }

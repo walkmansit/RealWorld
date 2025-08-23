@@ -3,13 +3,13 @@ package com.walkmansit.realworld.presenter.article
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.walkmansit.realworld.presenter.navigation.ArticleDestinationsArgs.SLUG_ARG
-import com.walkmansit.realworld.presenter.components.TextFieldState
 import com.walkmansit.realworld.domain.model.Article
-import com.walkmansit.realworld.domain.use_case.EditArticleUseCase
-import com.walkmansit.realworld.domain.use_case.GetArticleUseCase
-import com.walkmansit.realworld.domain.use_case.GetTagsUseCase
+import com.walkmansit.realworld.domain.usecases.EditArticleUseCase
+import com.walkmansit.realworld.domain.usecases.GetArticleUseCase
+import com.walkmansit.realworld.domain.usecases.GetTagsUseCase
 import com.walkmansit.realworld.domain.util.Either
+import com.walkmansit.realworld.presenter.components.TextFieldState
+import com.walkmansit.realworld.presenter.navigation.ArticleDestinationsArgs.SLUG_ARG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,74 +27,76 @@ sealed interface ArticleUiState {
         val body: TextFieldState = TextFieldState(),
         val selectedTags: List<String> = listOf(),
     ) : ArticleUiState
+
     data object IsLoading : ArticleUiState
-    data class HasError(val errorMsg: String) : ArticleUiState
+
+    data class HasError(
+        val errorMsg: String,
+    ) : ArticleUiState
 }
 
-//data class ArticleUiData(
+// data class ArticleUiData(
 //    val isLoading: Boolean = false,
 //    val errorMessage: String? = null,
 //    val uiEvent: UiEvent = UiEvent.Undefined
-//)
+// )
 
 @HiltViewModel
-class ArticleViewModel @Inject constructor(
-    private val getArticleUseCase: GetArticleUseCase,
-    private val getTagsUseCase: GetTagsUseCase,
-    private val editArticleUseCase: EditArticleUseCase,
-    savedStateHandle: SavedStateHandle,
-) : ViewModel() {
-    private val _tagsFlow = MutableStateFlow<List<String>?>(null)
-    private val _articleFlow = MutableStateFlow<Article?>(null)
+class ArticleViewModel
+    @Inject
+    constructor(
+        private val getArticleUseCase: GetArticleUseCase,
+        private val getTagsUseCase: GetTagsUseCase,
+        private val editArticleUseCase: EditArticleUseCase,
+        savedStateHandle: SavedStateHandle,
+    ) : ViewModel() {
+        private val tagsFlow = MutableStateFlow<List<String>?>(null)
+        private val articleFlow = MutableStateFlow<Article?>(null)
 
-    private val _slug: String = savedStateHandle[SLUG_ARG]!!
-    private lateinit var originalArticle: Article
+        private val slug: String = savedStateHandle[SLUG_ARG]!!
+        private lateinit var originalArticle: Article
 
-    private val _uiState = MutableStateFlow<ArticleUiState>(ArticleUiState.IsLoading)
-    val uiState = _uiState.asStateFlow()
+        private val _uiState = MutableStateFlow<ArticleUiState>(ArticleUiState.IsLoading)
+        val uiState = _uiState.asStateFlow()
 
-    init {
-        fetchData()
-    }
-
-
+        init {
+            fetchData()
+        }
 
 //    private val _canEdit: Boolean = savedStateHandle[CAN_EDIT_ARG]!!
 
+        private fun fetchData() {
+            viewModelScope.launch {
+                _uiState.update { ArticleUiState.IsLoading }
 
-    private fun fetchData(){
-        viewModelScope.launch {
-            _uiState.update { ArticleUiState.IsLoading }
+                fetchArticle()
 
-            fetchArticle()
-
-            combine(_tagsFlow.filterNotNull(), _articleFlow.filterNotNull()){
-                tag, article ->
-                originalArticle = article
-                tag to article
-            }.collectLatest { pair ->
-                _uiState.update {
-                    ArticleUiState.ArticleUiData(
-                        title = TextFieldState(pair.second.title),
-                        description = TextFieldState(pair.second.description),
-                        body = TextFieldState(pair.second.body!!),
-                        selectedTags = pair.first,
-                    )
+                combine(tagsFlow.filterNotNull(), articleFlow.filterNotNull()) { tag, article ->
+                    originalArticle = article
+                    tag to article
+                }.collectLatest { pair ->
+                    _uiState.update {
+                        ArticleUiState.ArticleUiData(
+                            title = TextFieldState(pair.second.title),
+                            description = TextFieldState(pair.second.description),
+                            body = TextFieldState(pair.second.body!!),
+                            selectedTags = pair.first,
+                        )
+                    }
                 }
             }
         }
-    }
 
-    private suspend fun fetchArticle(){
-        when (val artRes = getArticleUseCase(_slug)) {
-            is Either.Fail -> {
-                _uiState.update { ArticleUiState.HasError("Failed to load data") }
-            }
-            is Either.Success -> {
-                _articleFlow.value = artRes.value
+        private suspend fun fetchArticle() {
+            when (val artRes = getArticleUseCase(slug)) {
+                is Either.Fail -> {
+                    _uiState.update { ArticleUiState.HasError("Failed to load data") }
+                }
+                is Either.Success -> {
+                    articleFlow.value = artRes.value
+                }
             }
         }
-    }
 
 //    private fun submitEditArticle() {
 //
@@ -117,7 +119,7 @@ class ArticleViewModel @Inject constructor(
 //
 //            when (editArticleResp) {
 //                is Either.Success -> {
-////                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
+// //                    _uiState.update { it.copy(uiEvent = UiEvent.NavigateEvent(RwDestinations.FEED_ROUTE)) }
 //                }
 //
 //                is Either.Fail -> {
@@ -136,7 +138,4 @@ class ArticleViewModel @Inject constructor(
 //        }
 //        }
 //    }
-
-
-
-}
+    }

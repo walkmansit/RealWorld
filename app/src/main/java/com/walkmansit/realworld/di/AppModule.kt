@@ -12,11 +12,11 @@ import com.walkmansit.realworld.data.repository.AuthRepositoryImpl
 import com.walkmansit.realworld.data.repository.TokenRepositoryImpl
 import com.walkmansit.realworld.data.repository.UserPreferencesRepositoryImpl
 import com.walkmansit.realworld.data.util.AuthInterceptor
+import com.walkmansit.realworld.data.util.Constants
 import com.walkmansit.realworld.domain.repository.ArticleRepository
 import com.walkmansit.realworld.domain.repository.AuthRepository
 import com.walkmansit.realworld.domain.repository.TokenRepository
 import com.walkmansit.realworld.domain.repository.UserPreferencesRepository
-import com.walkmansit.realworld.data.util.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,13 +33,14 @@ import javax.inject.Singleton
 object AppModule {
     @Provides
     @Singleton
-    fun providesPreferenceDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
+    fun providesPreferenceDataStore(
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> =
         PreferenceDataStoreFactory.create(
             produceFile = {
                 context.preferencesDataStoreFile(Constants.USER_PREFERENCES_NAME)
-            }
+            },
         )
-
 
     @Provides
     @Singleton
@@ -48,56 +49,42 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providesTokenRepository(dataStore: DataStore<Preferences>): TokenRepository =
-        TokenRepositoryImpl(dataStore)
+    fun providesTokenRepository(dataStore: DataStore<Preferences>): TokenRepository = TokenRepositoryImpl(dataStore)
 
     @Singleton
     @Provides
-    fun provideAuthInterceptor(tokenRepository: TokenRepository): AuthInterceptor =
-        AuthInterceptor(tokenRepository)
-
+    fun provideAuthInterceptor(tokenRepository: TokenRepository): AuthInterceptor = AuthInterceptor(tokenRepository)
 
     @Singleton
     @Provides
-    fun provideOkHttpClient(
-        authInterceptor: AuthInterceptor
-    ): OkHttpClient {
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
 
-        return OkHttpClient.Builder()
+        return OkHttpClient
+            .Builder()
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
-            //.authenticator(authAuthenticator)
+            // .authenticator(authAuthenticator)
             .build()
     }
 
     @Provides
     @Singleton
-    fun providesApiService(okHttpClient: OkHttpClient): ApiService {
-        return Retrofit.Builder()
+    fun providesApiService(okHttpClient: OkHttpClient): ApiService =
+        Retrofit
+            .Builder()
             .client(okHttpClient)
             .baseUrl(BuildConfig.API_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
-    }
 
     @Provides
     @Singleton
-    fun providesAuthRepository(apiService: ApiService): AuthRepository =
-        AuthRepositoryImpl(apiService)
+    fun providesAuthRepository(apiService: ApiService): AuthRepository = AuthRepositoryImpl(apiService)
 
     @Provides
     @Singleton
-    fun providesArticleRepository(apiService: ApiService): ArticleRepository =
-        ArticleRepositoryImpl(apiService)
-
-//    @Provides
-//    @Singleton
-//    fun providesRegistrationUseCase(repository: AuthRepository) = RegistrationUseCase(repository)
-
-//    @Provides
-//    @Singleton
-//    fun providesRegistrationViewModel(authRepository: AuthRepositoryImpl: ApiService) = RegistrationViewModel(apiService)
+    fun providesArticleRepository(apiService: ApiService): ArticleRepository = ArticleRepositoryImpl(apiService)
 }

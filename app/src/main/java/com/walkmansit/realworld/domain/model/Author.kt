@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Author (
+data class Author(
     val username: String,
     val bio: String,
     val image: String,

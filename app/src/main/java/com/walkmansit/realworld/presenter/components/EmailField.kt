@@ -28,11 +28,12 @@ fun EmailField(
         placeholder = {
             Text(text = "Email ")
         },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next,
-        ),
-        isError = email.hasError()
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next,
+            ),
+        isError = email.hasError(),
     )
     if (email.hasError()) {
         Text(
@@ -40,7 +41,7 @@ fun EmailField(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

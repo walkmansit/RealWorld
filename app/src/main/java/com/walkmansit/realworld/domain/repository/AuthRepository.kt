@@ -11,7 +11,11 @@ import com.walkmansit.realworld.domain.model.UserRegisterCredentials
 import com.walkmansit.realworld.domain.util.Either
 
 interface AuthRepository {
-    suspend fun login(userCredentials: UserLoginCredentials): Either<Either<CommonError,LoginFailed>, User>
-    suspend fun register(userCredentials: UserRegisterCredentials): Either<Either<CommonError,RegistrationFailed>, User>
+    suspend fun login(userCredentials: UserLoginCredentials): Either<Either<CommonError, LoginFailed>, User>
+
+    suspend fun register(
+        userCredentials: UserRegisterCredentials,
+    ): Either<Either<CommonError, RegistrationFailed>, User>
+
     suspend fun getProfile(username: String): Either<RequestFailed, Profile>
 }

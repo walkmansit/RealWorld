@@ -32,7 +32,6 @@ fun PasswordField(
 ) {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
-
     Spacer(modifier = Modifier.height(32.dp))
 
     OutlinedTextField(
@@ -43,15 +42,19 @@ fun PasswordField(
             Text(text = "Password ")
         },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password,
-            imeAction = ImeAction.Unspecified,
-        ),
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Unspecified,
+            ),
         isError = password.hasError(),
         trailingIcon = {
-            val image = if (passwordVisible)
-                Icons.Filled.Visibility
-            else Icons.Filled.VisibilityOff
+            val image =
+                if (passwordVisible) {
+                    Icons.Filled.Visibility
+                } else {
+                    Icons.Filled.VisibilityOff
+                }
             // Localized description for accessibility services
             val description = if (passwordVisible) "Hide password" else "Show password"
 
@@ -59,8 +62,7 @@ fun PasswordField(
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                 Icon(imageVector = image, description)
             }
-        }
-
+        },
     )
     if (password.hasError()) {
         Text(
@@ -68,7 +70,7 @@ fun PasswordField(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

@@ -1,0 +1,103 @@
+build:
+  maxIssues: 0                # Прерывать сборку при наличии нарушений
+  excludeCorrectable: false   # Не исключать автоисправляемые нарушения
+  weights: {}                 # Можно указать веса для правил (по умолчанию все равны)
+
+config:
+  validation: true            # Проверять корректность самого конфига
+  warningsAsErrors: false     # Не считать предупреждения ошибками
+  # excludes: '**/build/**,**/generated/**,**/.gradle/**'
+
+processors:
+  active: true
+  exclude:
+    - 'DetektProgressListener' # отключает прогресс-бар в выводе
+
+console-reports:
+  active: true
+
+output-reports:
+  active: true
+  exclude:
+    - 'TxtOutputReport'        # текстовый отчёт не нужен, можно оставить HTML/XML
+
+style:
+  active: true
+  MagicNumber:
+    active: true
+    excludes: [ '**/test/**', '**/androidTest/**' ]
+    ignoreNumbers: [ '-1', '0', '1' ]  # числа, которые не будут считаться "магическими"
+    ignoreHashCodeFunction: true
+    ignorePropertyDeclaration: true
+    ignoreLocalVariableDeclaration: false
+    ignoreAnnotation: true
+    ignoreNamedArgument: true
+    ignoreEnums: true
+    ignoreCompanionObjectPropertyDeclaration: true
+  WildcardImport:
+    active: false              # Разрешаем * в импорт, особенно полезно для Compose
+  MaxLineLength:
+    active: true
+    maxLineLength: 120
+    excludePackageStatements: true
+    excludeImportStatements: true
+  NewLineAtEndOfFile:
+    active: true
+
+naming:
+  active: true
+  FunctionNaming:
+    active: true
+    # Для обычных проектов — имена функций с маленькой буквы
+    # Если используешь Compose — можно добавить ignoreAnnotated: [Composable]
+    ignoreAnnotated: [Composable]
+    functionPattern: '^[a-z][a-zA-Z0-9]*$'
+  VariableNaming:
+    active: true
+    variablePattern: '^[a-z][a-zA-Z0-9]*$'
+  ObjectPropertyNaming:
+    active: true
+    constantPattern: '^[A-Z][_A-Z0-9]*$'
+    propertyPattern: '^[a-z][a-zA-Z0-9]*$'
+  PackageNaming:
+    active: true
+    packagePattern: '^[a-z]+(\.[a-z][a-z0-9]*)*$'
+
+complexity:
+  active: true
+  LongMethod:
+    active: true
+    ignoreAnnotated: [Composable]
+    threshold: 60              # метод не должен быть длиннее 60 строк
+  LongParameterList:
+    active: true
+    ignoreAnnotated: [Composable]
+    functionThreshold: 6               # не больше 6 параметров
+    constructorThreshold: 6               # не больше 6 параметров
+  TooManyFunctions:
+    active: true
+    thresholdInClasses: 30
+    thresholdInInterfaces: 10
+    thresholdInObjects: 20
+
+performance:
+  active: true
+  ForEachOnRange:
+    active: true
+  SpreadOperator:
+    active: true
+
+potential-bugs:
+  active: true
+  EqualsWithHashCodeExist:
+    active: true
+  IteratorNotThrowingNoSuchElementException:
+    active: true
+
+comments:
+  active: true
+  CommentOverPrivateFunction:
+    active: false              # обычно не нужен
+  CommentOverPrivateProperty:
+    active: false
+

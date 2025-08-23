@@ -17,6 +17,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
+import com.walkmansit.realworld.presenter.components.ColorUtilsConst.CONST_360
+import com.walkmansit.realworld.presenter.components.ColorUtilsConst.CONST_37
 import kotlin.math.absoluteValue
 
 @Composable
@@ -28,17 +30,27 @@ fun CircleAvatar(
     textStyle: TextStyle = MaterialTheme.typography.labelSmall,
 ) {
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
-        val color = remember(id, username) {
-            Color("$id / $username".toHslColor())
-        }
+        val color =
+            remember(id, username) {
+                Color("$id / $username".toHslColor())
+            }
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(SolidColor(color))
         }
         Text(text = username, style = textStyle, color = Color.White)
     }
 }
+
 @ColorInt
-fun String.toHslColor(saturation: Float = 0.5f, lightness: Float = 0.4f): Int {
-    val hue = fold(0) { acc, char -> char.code + acc * 37 } % 360
+fun String.toHslColor(
+    saturation: Float = 0.5f,
+    lightness: Float = 0.4f,
+): Int {
+    val hue = fold(0) { acc, char -> char.code + acc * CONST_37 } % CONST_360
     return ColorUtils.HSLToColor(floatArrayOf(hue.absoluteValue.toFloat(), saturation, lightness))
+}
+
+private object ColorUtilsConst {
+    const val CONST_37 = 37
+    const val CONST_360 = 360
 }

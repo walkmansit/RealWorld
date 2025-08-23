@@ -1,37 +1,18 @@
-import org.apache.tools.ant.util.JavaEnvUtils.VERSION_11
+import org.gradle.kotlin.dsl.detektPlugins
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
 
-
 //    id("kotlin-kapt")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
+    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
-
-/*val localProperties = java.util.Properties()
-val localPropertiesFile = rootProject.file("local.properties")
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.inputStream().use { stream ->
-        localProperties.load(stream)
-    }
-} else {
-    println("local.properties file not found. CI build? Using empty defaults or environment variables.")
-}
-
-fun getLocalPropertyOrFail(key: String): String {
-    return localProperties.getProperty(key)
-        ?: throw GradleException("Property '$key' not found in local.properties. Required for build.")
-}
-
-// === Helper function to get a property safely ===
-// This is a useful pattern to avoid repeating null checks.
-fun getLocalProperty(key: String, default: String = ""): String {
-    return localProperties.getProperty(key, default)
-}*/
 
 android {
     namespace = "com.walkmansit.realworld"
@@ -60,7 +41,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -68,12 +49,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        jvmToolchain(17)
     }
     buildFeatures {
         compose = true
-        buildConfig = true   // ensure generation
+        buildConfig = true // ensure generation
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -82,6 +63,24 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+detekt {
+    toolVersion = "1.23.8"
+    config.from("$rootDir/detekt.yml")
+    buildUponDefaultConfig = false // чтобы использовать только свой конфиг
+    allRules = false // включать все правила (редко нужно)
+}
+
+ktlint {
+    debug.set(false)
+    android.set(true)
+    ignoreFailures.set(false)
+    reporters {
+        reporter(ReporterType.PLAIN)
+        reporter(ReporterType.CHECKSTYLE)
+        reporter(ReporterType.HTML)
     }
 }
 
@@ -123,11 +122,11 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
 
-    //Material icons
+    // Material icons
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
 
-    //FlowMvi
+    // FlowMvi
     implementation(libs.flowmvi.core)
     implementation(libs.flowmvi.test)
     implementation(libs.flowmvi.compose)
@@ -137,18 +136,26 @@ dependencies {
     implementation(libs.flowmvi.essenty)
     implementation(libs.flowmvi.essenty.compose)
 
-    //Immutable collections
+    // Immutable collections
     implementation(libs.kotlinx.collections.immutable)
 
-    //Routing and args
+    // detect
+    detektPlugins(libs.detekt.formatting)
+
+    // Routing and args
 //    ksp(libs.processor.ksp)
 //    kapt(libs.processor.kapt)
 //    implementation(libs.core)
 //    implementation(libs.accompanist.navigation)
+}
 
+// tasks.getByPath("preBuild").dependsOn("ktlintFormat")
+tasks.check {
+    dependsOn(tasks.detekt)
+    dependsOn(tasks.ktlintCheck)
 }
 
 // Allow references to generated code
-//kapt {
+// kapt {
 //    correctErrorTypes = true
-//}
+// }

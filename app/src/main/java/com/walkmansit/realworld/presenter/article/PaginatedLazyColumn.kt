@@ -36,14 +36,13 @@ import kotlinx.coroutines.flow.Flow
 @Composable
 fun PaginatedLazyColumn(
     modifier: Modifier = Modifier,
-    pagerFlow:  Flow<PagingData<Article>>,
+    pagerFlow: Flow<PagingData<Article>>,
     onArticleClick: (Article) -> Unit,
     addFavorite: (Article) -> Unit,
 //    items: PersistentList<String>,  // Using PersistentList for efficient state management
 //    loadMoreItems: () -> Unit,  // Function to load more items
 //    listState: LazyListState,  // Track the scroll state of the LazyColumn
 //    isLoading: Boolean,  // Track if items are being loaded
-
 ) {
     Log.d("PaginatedLazyColumn", "PaginatedLazyColumn view recomposition")
 
@@ -51,62 +50,65 @@ fun PaginatedLazyColumn(
 
     LazyColumn(
 //        contentPadding = PaddingValues(bottom = 16.dp),
-        modifier = modifier
-
-            .fillMaxSize()
-            .padding(16.dp),  // Add padding for better visual spacing
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(16.dp),
+        // Add padding for better visual spacing
     ) {
         items(
             lazyPagingItems.itemCount,
-            key = lazyPagingItems.itemKey { it }
+            key = lazyPagingItems.itemKey { it },
         ) { index ->
             val item = lazyPagingItems[index]!!
 
             Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                ),
-                modifier = Modifier
-                    .clickable { onArticleClick(item) }
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
+                modifier =
+                    Modifier
+                        .clickable { onArticleClick(item) },
             ) {
                 ConstraintLayout(
-                    modifier = Modifier
-                        .padding(top = 8.dp, bottom = 8.dp)
-                        .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.SpaceBetween
+                    modifier =
+                        Modifier
+                            .padding(top = 8.dp, bottom = 8.dp)
+                            .fillMaxWidth(),
+                    //                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     val (favorite, title, avatar) = createRefs()
 
                     IconButton(
-                        modifier = Modifier
-                            .constrainAs(favorite){
-                                start.linkTo(parent.start)
-                                top.linkTo(parent.top)
-                                bottom.linkTo(parent.bottom)
-                            }
-,
+                        modifier =
+                            Modifier
+                                .constrainAs(favorite) {
+                                    start.linkTo(parent.start)
+                                    top.linkTo(parent.top)
+                                    bottom.linkTo(parent.bottom)
+                                },
                         onClick = { addFavorite(item) },
 //                        modifier = Modifier.align(Alignment.Top)
                     ) {
                         Icon(
                             imageVector = if (item.favorited) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                            "Favorite icon"
+                            "Favorite icon",
                         )
-
                     }
                     Column(
                         horizontalAlignment = Alignment.Start,
-                        modifier = Modifier
-                            .constrainAs(title){
-                                start.linkTo(favorite.end, margin = 16.dp)
-                                end.linkTo(avatar.start, margin = 16.dp)
-                                top.linkTo(parent.top)
-                                bottom.linkTo(parent.bottom)
-                            }
+                        modifier =
+                            Modifier
+                                .constrainAs(title) {
+                                    start.linkTo(favorite.end, margin = 16.dp)
+                                    end.linkTo(avatar.start, margin = 16.dp)
+                                    top.linkTo(parent.top)
+                                    bottom.linkTo(parent.bottom)
+                                },
 //                            .fillParentMaxWidth()
 //                            .fillMaxWidth()
                     ) {
-
                         Text(
                             text = item.title,
                             textAlign = TextAlign.Start,
@@ -118,20 +120,22 @@ fun PaginatedLazyColumn(
                         )
                     }
                     CircleAvatar(
-                        item.slug, item.author.username,
-                        modifier = Modifier
-                            .wrapContentSize()
-                            .constrainAs(avatar) {
-                                end.linkTo(parent.end, margin = 16.dp)
-                                top.linkTo(parent.top)
-                                bottom.linkTo(parent.bottom)
-                            }
+                        item.slug,
+                        item.author.username,
+                        modifier =
+                            Modifier
+                                .wrapContentSize()
+                                .constrainAs(avatar) {
+                                    end.linkTo(parent.end, margin = 16.dp)
+                                    top.linkTo(parent.top)
+                                    bottom.linkTo(parent.bottom)
+                                },
                     )
-
                 }
             }
-            if(index < lazyPagingItems.itemCount)
+            if (index < lazyPagingItems.itemCount) {
                 Spacer(modifier = Modifier.height(16.dp))
+            }
 
 //            Text(text = item.slug, modifier = Modifier.padding(8.dp))  // Add padding to each item
         }

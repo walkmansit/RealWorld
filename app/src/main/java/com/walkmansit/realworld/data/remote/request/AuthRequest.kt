@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class AuthRequest(
     @SerializedName("user")
-    var user: UserAuthRequest
+    var user: UserAuthRequest,
 )
 
 data class UserAuthRequest(

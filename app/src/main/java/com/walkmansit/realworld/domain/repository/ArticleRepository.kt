@@ -11,9 +11,17 @@ import com.walkmansit.realworld.domain.util.Either
 
 interface ArticleRepository {
     suspend fun getArticle(slug: String): Either<RequestFailed, Article>
+
     suspend fun getArticles(filter: ArticlesFilter): Either<RequestFailed, List<Article>>
+
     suspend fun getArticlesFeed(filter: ArticlesFilter): Either<RequestFailed, List<Article>>
-    suspend fun updateArticle(editArticle: EditArticle, originalArticle: Article): Either<EditArticleFailed, Article>
+
+    suspend fun updateArticle(
+        editArticle: EditArticle,
+        originalArticle: Article,
+    ): Either<EditArticleFailed, Article>
+
     suspend fun createArticle(newArticle: NewArticle): Either<NewArticleFailed, Article>
+
     suspend fun getTags(): Either<RequestFailed, List<String>>
 }

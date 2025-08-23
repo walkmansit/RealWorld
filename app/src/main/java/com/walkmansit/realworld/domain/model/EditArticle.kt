@@ -1,6 +1,6 @@
 package com.walkmansit.realworld.domain.model
 
-class EditArticle (
+class EditArticle(
     val title: String,
     val description: String,
     val body: String,

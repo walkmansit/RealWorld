@@ -1,11 +1,10 @@
 package com.walkmansit.realworld.data.remote.request
 
-
 import com.google.gson.annotations.SerializedName
 
 data class RegistrationRequest(
     @SerializedName("user")
-    var user: UserRegistrationRequest
+    var user: UserRegistrationRequest,
 )
 
 data class UserRegistrationRequest(

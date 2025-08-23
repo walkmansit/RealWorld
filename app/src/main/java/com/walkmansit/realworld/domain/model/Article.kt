@@ -6,7 +6,7 @@ import java.util.Date
 
 @Suppress("SpellCheckingInspection")
 @Parcelize
-data class Article (
+data class Article(
     val slug: String,
     val title: String,
     val description: String,

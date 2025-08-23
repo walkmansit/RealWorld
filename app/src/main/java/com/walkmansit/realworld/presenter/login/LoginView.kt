@@ -39,7 +39,6 @@ import com.walkmansit.realworld.presenter.components.RwScaffold
 import pro.respawn.flowmvi.api.IntentReceiver
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
-
 @Composable
 fun LoginView(
     modifier: Modifier = Modifier,
@@ -48,10 +47,8 @@ fun LoginView(
     navigateFeed: (String) -> Unit,
     toast: (String) -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
-    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
-
+    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) = with(viewModel.store) {
-
     val state by subscribe { action ->
         when (action) {
             is LoginAction.RedirectRegistration -> navigateRegistration()
@@ -66,7 +63,7 @@ fun LoginView(
         onUpClicked = { navController.popBackStack() },
         snackBarHostState = snackBarHostState,
         fab = {
-            SmallFloatingActionButton(onClick = {intent(LoginIntent.SubmitStart)}) {
+            SmallFloatingActionButton(onClick = { intent(LoginIntent.SubmitStart) }) {
                 Icon(Icons.Filled.Done, "Submit")
             }
         },
@@ -75,10 +72,9 @@ fun LoginView(
     }
 }
 
-
 @Composable
 fun IntentReceiver<LoginIntent>.LoginViewContainer(state: LoginState) {
-    when(state){
+    when (state) {
         is LoginState.Loading -> CircularProgress()
         is LoginState.LoadingOnSubmit -> CircularProgress()
         is LoginState.Error -> Text(text = state.message)
@@ -89,11 +85,12 @@ fun IntentReceiver<LoginIntent>.LoginViewContainer(state: LoginState) {
 @Composable
 fun IntentReceiver<LoginIntent>.LoginViewContent(state: LoginState.Content) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(32.dp))
         Text(
@@ -102,7 +99,7 @@ fun IntentReceiver<LoginIntent>.LoginViewContent(state: LoginState.Content) {
             fontSize = 26.sp,
             color = Color.Black,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         Text(
             modifier = Modifier.fillMaxWidth(),
@@ -110,17 +107,17 @@ fun IntentReceiver<LoginIntent>.LoginViewContent(state: LoginState.Content) {
             fontSize = 19.sp,
             color = Color.Black,
             fontWeight = FontWeight.Light,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        //Email
+        // Email
         EmailField(state.fields.email) {
             intent(LoginIntent.UpdateEmail(it))
         }
 
-        //Password
+        // Password
         PasswordField(state.fields.password) {
             intent(LoginIntent.UpdatePassword(it))
         }
@@ -129,18 +126,17 @@ fun IntentReceiver<LoginIntent>.LoginViewContent(state: LoginState.Content) {
 
         var enabled by rememberSaveable { mutableStateOf(true) }
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(enabled = enabled) {
-                    enabled = false
-                    intent(LoginIntent.RedirectRegistration)
-                },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = enabled) {
+                        enabled = false
+                        intent(LoginIntent.RedirectRegistration)
+                    },
             text = "Create new account",
             style = MaterialTheme.typography.bodyMedium,
             color = Color.Blue,
             textAlign = TextAlign.Start,
         )
-
     }
-
 }

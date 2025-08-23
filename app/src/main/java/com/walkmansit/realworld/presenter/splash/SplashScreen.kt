@@ -13,7 +13,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.walkmansit.realworld.presenter.components.CircularProgress
 import kotlinx.coroutines.flow.collectLatest
 
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SplashScreen(
@@ -22,29 +21,28 @@ fun SplashScreen(
     navigateRegistration: () -> Unit,
     navigateFeed: (String) -> Unit,
     viewModel: SplashScreenViewModel = hiltViewModel(),
-    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-
 //    val uiState = viewModel.uiState.collectAsState()
 
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
             when (event.navEvent) {
                 is SplashNavigationEvent.RedirectRegistration ->
-                {
-                    navigateRegistration()
-                    viewModel.consumeNavEvent()
-                }
+                    {
+                        navigateRegistration()
+                        viewModel.consumeNavEvent()
+                    }
                 is SplashNavigationEvent.RedirectLogin ->
-                {
-                    navigateLogin()
-                    viewModel.consumeNavEvent()
-                }
+                    {
+                        navigateLogin()
+                        viewModel.consumeNavEvent()
+                    }
                 is SplashNavigationEvent.RedirectFeed ->
-                {
-                    navigateFeed(event.navEvent.username)
-                    viewModel.consumeNavEvent()
-                }
+                    {
+                        navigateFeed(event.navEvent.username)
+                        viewModel.consumeNavEvent()
+                    }
                 is SplashNavigationEvent.Undefined -> { }
             }
         }

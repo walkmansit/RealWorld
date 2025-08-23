@@ -1,6 +1,5 @@
 package com.walkmansit.realworld.presenter.components
 
-
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,11 +33,12 @@ fun MultilineTextField(
         placeholder = {
             Text(text = placeholderText)
         },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Done,
-        ),
-        isError = value.hasError()
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done,
+            ),
+        isError = value.hasError(),
     )
     if (value.hasError()) {
         Text(
@@ -46,7 +46,7 @@ fun MultilineTextField(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

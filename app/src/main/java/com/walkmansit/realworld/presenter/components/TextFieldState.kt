@@ -4,7 +4,5 @@ data class TextFieldState(
     val text: String = "",
     val error: String? = null,
 ) {
-    fun hasError(): Boolean {
-        return !error.isNullOrEmpty()
-    }
+    fun hasError(): Boolean = !error.isNullOrEmpty()
 }

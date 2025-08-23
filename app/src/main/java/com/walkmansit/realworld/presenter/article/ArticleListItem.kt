@@ -12,23 +12,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.walkmansit.realworld.domain.model.Article
 
-
 @Composable
 fun ArticleListItem(
     article: Article,
     modifier: Modifier = Modifier,
-){
+) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        ),
-        modifier = modifier.fillMaxWidth()
-
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            ),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Text(
             text = article.slug,
-            modifier = modifier
-                .padding(16.dp),
+            modifier =
+                modifier
+                    .padding(16.dp),
             textAlign = TextAlign.Start,
         )
     }

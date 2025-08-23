@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 class EditArticleRequest(
     @SerializedName("article")
-    var article: EditArticleBody
+    var article: EditArticleBody,
 )
 
 data class EditArticleBody(

@@ -1,6 +1,5 @@
 package com.walkmansit.realworld.presenter.article
 
-
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -63,6 +62,7 @@ import com.walkmansit.realworld.presenter.components.RegularTextField
 import com.walkmansit.realworld.presenter.components.RwScaffold
 import com.walkmansit.realworld.presenter.components.TagsComponent
 import com.walkmansit.realworld.presenter.components.TagsComponentSimple
+import com.walkmansit.realworld.presenter.components.ViewConst.ROUNDED_CORNER_SHAPE_50E
 import kotlinx.coroutines.launch
 import pro.respawn.flowmvi.api.IntentReceiver
 import pro.respawn.flowmvi.compose.dsl.subscribe
@@ -73,7 +73,7 @@ fun NewArticleView(
     navController: NavController = rememberNavController(),
     articleViewModel: NewArticleViewModel = hiltViewModel(),
     tagsViewModel: TagsViewModel = hiltViewModel(),
-    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) = with(articleViewModel.store) {
     val state by subscribe { action ->
         when (action) {
@@ -97,8 +97,11 @@ fun NewArticleView(
 }
 
 @Composable
-fun IntentReceiver<NewArticleIntent>.NewArticleViewContainer(state: NewArticleState, tagsViewModel: TagsViewModel) {
-    when(state){
+fun IntentReceiver<NewArticleIntent>.NewArticleViewContainer(
+    state: NewArticleState,
+    tagsViewModel: TagsViewModel,
+) {
+    when (state) {
         is NewArticleState.Loading -> CircularProgress()
         is NewArticleState.LoadingOnSubmit -> CircularProgress()
         is NewArticleState.Error -> Text(text = state.message)
@@ -108,7 +111,7 @@ fun IntentReceiver<NewArticleIntent>.NewArticleViewContainer(state: NewArticleSt
 
 @Composable
 fun IntentReceiver<TagsIntent>.TagsViewContainer(state: TagState) {
-    when(state){
+    when (state) {
         is TagState.Loading -> CircularProgress()
         is TagState.Error -> Text(text = state.message)
         is TagState.Content -> TagsViewContent(state.content)
@@ -117,48 +120,51 @@ fun IntentReceiver<TagsIntent>.TagsViewContainer(state: TagState) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IntentReceiver<TagsIntent>.TagsViewContent(content : TagFields){
+fun IntentReceiver<TagsIntent>.TagsViewContent(content: TagFields) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
 
     TagsComponent(
         content.selectedTags,
         true,
         { tag -> intent(TagsIntent.DeleteTag(tag)) },
-        { showBottomSheet =  true},
+        { showBottomSheet = true },
     )
 
-    val onHide = coroutineScope
-        .launch { sheetState.hide() }
-        .invokeOnCompletion {
-            if (!sheetState.isVisible) {
-                showBottomSheet = false
+    val onHide =
+        coroutineScope
+            .launch { sheetState.hide() }
+            .invokeOnCompletion {
+                if (!sheetState.isVisible) {
+                    showBottomSheet = false
+                }
             }
-        }
 
     TagsBottomSheet(
         showBottomSheet,
         sheetState,
         tagFields = content,
-        {}
+        {},
     )
 
     BackHandler(sheetState.isVisible) {
         coroutineScope.launch { sheetState.hide() }
     }
-
 }
 
 @Composable
-fun IntentReceiver<NewArticleIntent>.NewArticleViewContent(content: NewArticleFields, tagsViewModel: TagsViewModel) {
+fun IntentReceiver<NewArticleIntent>.NewArticleViewContent(
+    content: NewArticleFields,
+    tagsViewModel: TagsViewModel,
+) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(32.dp))
         Text(
@@ -167,7 +173,7 @@ fun IntentReceiver<NewArticleIntent>.NewArticleViewContent(content: NewArticleFi
             fontSize = 26.sp,
             color = Color.Black,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
 
         RegularTextField(content.title, "Title") {
@@ -194,7 +200,7 @@ fun IntentReceiver<NewArticleIntent>.NewArticleViewContent(content: NewArticleFi
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        with(tagsViewModel.store){
+        with(tagsViewModel.store) {
             val tagState by subscribe()
             TagsViewContainer(tagState)
         }
@@ -203,10 +209,8 @@ fun IntentReceiver<NewArticleIntent>.NewArticleViewContent(content: NewArticleFi
 //            { viewModel.onIntent(NewArticleIntent.DeleteTag(it)) },
 //            { showBottomSheet = true }
 //        )
-
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -215,7 +219,7 @@ fun IntentReceiver<TagsIntent>.TagsBottomSheet(
     sheetState: SheetState,
     tagFields: TagFields,
     onHide: () -> Unit,
-){
+) {
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -227,19 +231,20 @@ fun IntentReceiver<TagsIntent>.TagsBottomSheet(
             tonalElevation = 16.dp,
             dragHandle = {
                 Box(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .width(50.dp)
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(MaterialTheme.colorScheme.primary)
+                    modifier =
+                        Modifier
+                            .padding(all = 8.dp)
+                            .width(width = 50.dp)
+                            .height(height = 6.dp)
+                            .clip(shape = RoundedCornerShape(ROUNDED_CORNER_SHAPE_50E))
+                            .background(MaterialTheme.colorScheme.primary),
 //                        .align(Alignment.Start)
                 )
-            }
+            },
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -249,13 +254,13 @@ fun IntentReceiver<TagsIntent>.TagsBottomSheet(
                     Text(
                         "Tags",
                         style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
-                    IconButton(onClick = onHide
+                    IconButton(
+                        onClick = onHide,
                     ) {
                         Icon(imageVector = Icons.Filled.ArrowDownward, "hide")
                     }
-
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -276,8 +281,6 @@ fun IntentReceiver<TagsIntent>.TagsBottomSheet(
             }
         }
     }
-
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -292,7 +295,7 @@ fun SearchScreen(
 ) {
 //    val searchResults by searchResultsFlow.collectAsStateWithLifecycle()
 
-    val onActiveChange : (Boolean) -> Unit = {
+    val onActiveChange: (Boolean) -> Unit = {
     }
     val colors1 = SearchBarDefaults.colors()
     SearchBar(
@@ -301,25 +304,25 @@ fun SearchScreen(
                 modifier = Modifier.fillMaxWidth(),
                 value = searchQuery,
                 onValueChange = onUpdateQuery,
-
                 placeholder = {
                     Text(text = "Search ")
                 },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { onSubmitTag(searchQuery) }
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onDone = { onSubmitTag(searchQuery) },
+                    ),
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
                         tint = MaterialTheme.colorScheme.onSurface,
-                        contentDescription = null
+                        contentDescription = null,
                     )
-                }
-
+                },
             )
 
 //            SearchBarDefaults.InputField(
@@ -351,12 +354,11 @@ fun SearchScreen(
         tonalElevation = 0.dp,
         shadowElevation = SearchBarDefaults.ShadowElevation,
         windowInsets = SearchBarDefaults.windowInsets,
-
-        ){
+    ) {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(32.dp),
             contentPadding = PaddingValues(16.dp),
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         ) {
             items(
                 count = searchResults.size,
@@ -364,10 +366,9 @@ fun SearchScreen(
                 itemContent = { index ->
                     val tag = searchResults[index]
                     TagListItem(tag = tag, onAddTag)
-                }
+                },
             )
         }
-
     }
 }
 
@@ -380,10 +381,9 @@ fun TagListItem(
     TextButton(onClick = { onAddTag(tag) }) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth(),
         ) {
             Text(text = tag)
         }
     }
-
 }

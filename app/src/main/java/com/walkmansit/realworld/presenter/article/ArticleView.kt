@@ -39,7 +39,7 @@ fun ArticleView(
     modifier: Modifier = Modifier,
     navController: NavController = rememberNavController(),
     viewModel: ArticleViewModel = hiltViewModel(),
-    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -64,7 +64,6 @@ fun ArticleView(
 //        }
 //    }
 
-
     RwScaffold(
         title = "Article details",
         upAvailable = navController.previousBackStackEntry != null,
@@ -73,15 +72,20 @@ fun ArticleView(
     ) { padding ->
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-        when(uiState){
-            is ArticleUiState.IsLoading -> { CircularProgress() }
-            is ArticleUiState.HasError -> { ErrorMessage(message = (uiState as ArticleUiState.HasError).errorMsg) }
+        when (uiState) {
+            is ArticleUiState.IsLoading -> {
+                CircularProgress()
+            }
+            is ArticleUiState.HasError -> {
+                ErrorMessage(message = (uiState as ArticleUiState.HasError).errorMsg)
+            }
             is ArticleUiState.ArticleUiData -> {
                 ViewArticle(
                     modifier,
                     uiState as ArticleUiState.ArticleUiData,
                     padding,
-            ) }
+                )
+            }
         }
     }
 }
@@ -91,14 +95,15 @@ fun ViewArticle(
     modifier: Modifier,
     article: ArticleUiState.ArticleUiData,
     padding: PaddingValues,
-){
+) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(padding)
-            .padding(start = 16.dp, end = 16.dp)
-            .verticalScroll(rememberScrollState()),
-//        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(start = 16.dp, end = 16.dp)
+                .verticalScroll(rememberScrollState()),
+        //        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 //        Text(
 //            modifier = Modifier.fillMaxWidth(),
@@ -108,67 +113,73 @@ fun ViewArticle(
 //            fontWeight = FontWeight.Bold,
 //            textAlign = TextAlign.Center
 //        )
-        //Title
+        // Title
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
             text = "Title",
             fontSize = 22.sp,
             color = Color.Black,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
         )
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
             text = article.title.text,
             fontSize = 26.sp,
             color = Color.Black,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
         )
 
-        //Description
+        // Description
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
             text = "Description",
             fontSize = 22.sp,
             color = Color.Black,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
         )
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
             text = article.description.text,
             fontSize = 26.sp,
             color = Color.Black,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
         )
 
-        //Body
+        // Body
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
             text = "Body",
             fontSize = 22.sp,
             color = Color.Black,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
         )
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
             text = article.body.text,
             fontSize = 26.sp,
             color = Color.Black,
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
         )
 
-        //Tags
+        // Tags
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = "Tags",

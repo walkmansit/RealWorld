@@ -16,39 +16,37 @@ import retrofit2.http.Query
 
 @Suppress("SpellCheckingInspection")
 interface ApiService {
-
-
-    //Authorization
+    // Authorization
     @POST("/api/v1/users/login")
     suspend fun loginUser(
-        @Body loginRequest: AuthRequest
+        @Body loginRequest: AuthRequest,
     ): AuthResponse
-
 
     @POST("/api/v1/users")
     suspend fun registerUser(
-        @Body registerRequest: RegistrationRequest
+        @Body registerRequest: RegistrationRequest,
     ): AuthResponse
 
-    //Tags
+    // Tags
     @GET("/api/v1/tags")
     suspend fun getTags(): TagsResponse
 
-    //Profile
+    // Profile
     @GET("/api/v1/profiles/{username}")
     suspend fun getProfile(
         @Path("username") username: String,
     ): ProfileResponse
 
-    //Articles
+    // Articles
 
     @GET("/api/v1/articles/{slug}")
-    suspend fun getArticle(@Path("slug") slug: String,
+    suspend fun getArticle(
+        @Path("slug") slug: String,
     ): SingleArticleResponse
 
     @POST("/api/v1/articles")
     suspend fun createArticle(
-        @Body newArticle: NewArticleRequest
+        @Body newArticle: NewArticleRequest,
     ): SingleArticleResponse
 
     @GET("/api/v1/articles")
@@ -58,7 +56,7 @@ interface ApiService {
         @Query("favorited") favorited: String?,
         @Query("limit") limit: Int,
         @Query("offset") offset: Int,
-        ): ArticlesResponse
+    ): ArticlesResponse
 
     @GET("/api/v1/articles/feed")
     suspend fun getArticlesFeed(

@@ -21,9 +21,7 @@ object RwDestinations {
     const val ARTICLE_ROUTE = "$ARTICLE/{$SLUG_ARG}?$CAN_EDIT_ARG={$CAN_EDIT_ARG}"
 //    const val STATISTICS_ROUTE = STATISTICS_SCREEN
 //    const val TASK_DETAIL_ROUTE = "$TASK_DETAIL_SCREEN/{$TASK_ID_ARG}"
-//const val ADD_EDIT_TASK_ROUTE = "$ADD_EDIT_TASK_SCREEN/{$TITLE_ARG}?$TASK_ID_ARG={$TASK_ID_ARG}"
-
-
+// const val ADD_EDIT_TASK_ROUTE = "$ADD_EDIT_TASK_SCREEN/{$TITLE_ARG}?$TASK_ID_ARG={$TASK_ID_ARG}"
 }
 
 object FeedDestinationsArgs {
@@ -45,29 +43,33 @@ object ArticleDestinationsArgs {
     const val CAN_EDIT_ARG = "can_edit"
 }
 
-class NavigationActions(private val navController: NavHostController) {
-    fun navigateToLogin(){
+class NavigationActions(
+    private val navController: NavHostController,
+) {
+    fun navigateToLogin() {
         navController.navigate(RwDestinations.LOGIN_ROUTE)
     }
 
-    fun navigateToRegistration(){
+    fun navigateToRegistration() {
         navController.navigate(RwDestinations.REGISTRATION_ROUTE)
     }
 
-    fun navigateToFeed(username: String){
+    fun navigateToFeed(username: String) {
         navController.navigate("$FEED$USERNAME_ARG={$username}")
     }
 
-    fun toast(text: String){
+    fun toast(text: String) {
         Toast.makeText(navController.context, text, Toast.LENGTH_SHORT).show()
     }
 
-    fun navigateToArticle(slug: String, canEdit: Boolean = false){
+    fun navigateToArticle(
+        slug: String,
+        canEdit: Boolean = false,
+    ) {
         navController.navigate("$ARTICLE/$slug?$CAN_EDIT_ARG=$canEdit")
     }
 
-    fun navigateToNewArticle(){
+    fun navigateToNewArticle() {
         navController.navigate(RwDestinations.NEW_ARTICLE_ROUTE)
     }
-
 }

@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 class NewArticleRequest(
     @SerializedName("article")
-    var article: NewArticleBody
+    var article: NewArticleBody,
 )
 
 data class NewArticleBody(

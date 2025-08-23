@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RwScaffold(
@@ -26,29 +25,34 @@ fun RwScaffold(
     upAvailable: Boolean,
     onUpClicked: () -> Unit,
     snackBarHostState: SnackbarHostState,
-    fab: @Composable () -> Unit = {  },
+    fab: @Composable () -> Unit = { },
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
+                colors =
+                    topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                    ),
                 title = { Text(text = title) },
                 navigationIcon = {
                     if (upAvailable) {
                         IconButton(onClick = { onUpClicked() }) {
-                            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.Black,
+                            )
                         }
                     }
-                }
+                },
             )
         },
         snackbarHost = { SnackbarHost(snackBarHostState) },
         floatingActionButton = fab,
-        content = content
+        content = content,
     )
 }

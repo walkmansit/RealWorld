@@ -12,27 +12,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
-
 @Composable
 fun ErrorMessage(
     modifier: Modifier = Modifier,
     message: String,
-)
-{
+) {
     Box(
         modifier = modifier.fillMaxSize(),
-    ){
+    ) {
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(alignment = Alignment.Center),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .align(alignment = Alignment.Center),
             text = message,
             fontSize = 26.sp,
             color = Color.Black,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }
-
-

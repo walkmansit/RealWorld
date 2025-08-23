@@ -4,5 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class TagsResponse(
     @SerializedName("tags")
-    var tags: List<String>
+    var tags: List<String>,
 )
+
+fun TagsResponse.toDomain() = tags

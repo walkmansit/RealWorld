@@ -9,13 +9,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.walkmansit.realworld.presenter.navigation.ArticleDestinationsArgs.CAN_EDIT_ARG
-import com.walkmansit.realworld.presenter.navigation.ArticleDestinationsArgs.SLUG_ARG
-import com.walkmansit.realworld.presenter.navigation.FeedDestinationsArgs.USERNAME_ARG
 import com.walkmansit.realworld.presenter.article.ArticleView
 import com.walkmansit.realworld.presenter.article.NewArticleView
 import com.walkmansit.realworld.presenter.feed.FeedView
 import com.walkmansit.realworld.presenter.login.LoginView
+import com.walkmansit.realworld.presenter.navigation.ArticleDestinationsArgs.CAN_EDIT_ARG
+import com.walkmansit.realworld.presenter.navigation.ArticleDestinationsArgs.SLUG_ARG
+import com.walkmansit.realworld.presenter.navigation.FeedDestinationsArgs.USERNAME_ARG
 import com.walkmansit.realworld.presenter.registration.RegistrationView
 import com.walkmansit.realworld.presenter.splash.SplashScreen
 
@@ -23,12 +23,13 @@ import com.walkmansit.realworld.presenter.splash.SplashScreen
 fun NavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    //coroutineScope: CoroutineScope = rememberCoroutineScope(),
-    //drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
+    // coroutineScope: CoroutineScope = rememberCoroutineScope(),
+    // drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     startDestination: String = RwDestinations.SPLASH_ROUTE,
-    navActions: NavigationActions = remember(navController) {
-        NavigationActions(navController)
-    }
+    navActions: NavigationActions =
+        remember(navController) {
+            NavigationActions(navController)
+        },
 ) {
 //    val currentNavBackStackEntry by navController.currentBackStackEntryAsState()
 //    val currentRoute = currentNavBackStackEntry?.destination?.route ?: startDestination
@@ -36,9 +37,8 @@ fun NavGraph(
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier
+        modifier = modifier,
     ) {
-
         composable(route = startDestination) {
             SplashScreen(
                 modifier,
@@ -62,15 +62,16 @@ fun NavGraph(
                 modifier,
                 navigateRegistration = navActions::navigateToRegistration,
                 navigateFeed = navActions::navigateToFeed,
-                toast = navActions::toast
-                )
+                toast = navActions::toast,
+            )
         }
 
         composable(
             route = RwDestinations.FEED_ROUTE,
-            arguments = listOf(
-                navArgument(USERNAME_ARG) { type = NavType.StringType },
-            )
+            arguments =
+                listOf(
+                    navArgument(USERNAME_ARG) { type = NavType.StringType },
+                ),
         ) {
             FeedView(
                 modifier,
@@ -86,10 +87,11 @@ fun NavGraph(
 
         composable(
             route = RwDestinations.ARTICLE_ROUTE,
-            arguments = listOf(
-                navArgument(SLUG_ARG) { type = NavType.StringType },
-                navArgument(CAN_EDIT_ARG) { type = NavType.BoolType },
-            )
+            arguments =
+                listOf(
+                    navArgument(SLUG_ARG) { type = NavType.StringType },
+                    navArgument(CAN_EDIT_ARG) { type = NavType.BoolType },
+                ),
         ) {
             ArticleView(modifier, navController)
         }

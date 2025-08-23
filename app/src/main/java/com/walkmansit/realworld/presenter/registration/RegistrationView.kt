@@ -36,14 +36,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.walkmansit.realworld.presenter.components.TextFieldState
 import com.walkmansit.realworld.presenter.components.CircularProgress
 import com.walkmansit.realworld.presenter.components.EmailField
 import com.walkmansit.realworld.presenter.components.PasswordField
 import com.walkmansit.realworld.presenter.components.RwScaffold
+import com.walkmansit.realworld.presenter.components.TextFieldState
 import pro.respawn.flowmvi.api.IntentReceiver
 import pro.respawn.flowmvi.compose.dsl.subscribe
-
 
 @Composable
 fun RegistrationView(
@@ -53,9 +52,8 @@ fun RegistrationView(
     navigateFeed: (String) -> Unit,
     toast: (String) -> Unit,
     viewModel: RegistrationViewModel = hiltViewModel(),
-    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) = with(viewModel.store) {
-
     val state by subscribe { action ->
         when (action) {
             is RegistrationAction.RedirectLogin -> navigateLogin()
@@ -81,7 +79,7 @@ fun RegistrationView(
 
 @Composable
 fun IntentReceiver<RegistrationIntent>.RegistrationViewContainer(state: RegistrationState) {
-    when(state){
+    when (state) {
         is RegistrationState.Loading -> CircularProgress()
         is RegistrationState.LoadingOnSubmit -> CircularProgress()
         is RegistrationState.Error -> Text(text = state.message)
@@ -92,11 +90,12 @@ fun IntentReceiver<RegistrationIntent>.RegistrationViewContainer(state: Registra
 @Composable
 fun IntentReceiver<RegistrationIntent>.RegistrationViewContent(state: RegistrationState.Content) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(32.dp))
         Text(
@@ -105,7 +104,7 @@ fun IntentReceiver<RegistrationIntent>.RegistrationViewContent(state: Registrati
             fontSize = 26.sp,
             color = Color.Black,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         Text(
             modifier = Modifier.fillMaxWidth(),
@@ -113,20 +112,20 @@ fun IntentReceiver<RegistrationIntent>.RegistrationViewContent(state: Registrati
             fontSize = 19.sp,
             color = Color.Black,
             fontWeight = FontWeight.Light,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
 
-        //Username
+        // Username
         UserNameField(state.fields.username, "Username ") {
             intent(RegistrationIntent.UpdateUserName(it))
         }
 
-        //Email
+        // Email
         EmailField(state.fields.email) {
             intent(RegistrationIntent.UpdateEmail(it))
         }
 
-        //Password
+        // Password
         PasswordField(state.fields.password) {
             intent(RegistrationIntent.UpdatePassword(it))
         }
@@ -135,19 +134,19 @@ fun IntentReceiver<RegistrationIntent>.RegistrationViewContent(state: Registrati
 
         var enabled by rememberSaveable { mutableStateOf(true) }
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(enabled = enabled) {
-                    enabled = false
-                    intent(RegistrationIntent.RedirectLogin)
-                },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = enabled) {
+                        enabled = false
+                        intent(RegistrationIntent.RedirectLogin)
+                    },
             text = "Already have an account? Sign in",
             style = MaterialTheme.typography.bodyMedium,
             color = Color.Blue,
             textAlign = TextAlign.Start,
         )
     }
-
 }
 
 @Composable
@@ -165,11 +164,12 @@ fun UserNameField(
         placeholder = {
             Text(text = placeholderText)
         },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Next,
-        ),
-        isError = username.hasError()
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+            ),
+        isError = username.hasError(),
     )
     if (username.hasError()) {
         Text(
@@ -177,7 +177,7 @@ fun UserNameField(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

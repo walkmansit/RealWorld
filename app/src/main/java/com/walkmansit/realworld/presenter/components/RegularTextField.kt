@@ -29,11 +29,12 @@ fun RegularTextField(
         placeholder = {
             Text(text = placeholderText)
         },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Next,
-        ),
-        isError = value.hasError()
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+            ),
+        isError = value.hasError(),
     )
     if (value.hasError()) {
         Text(
@@ -41,7 +42,7 @@ fun RegularTextField(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

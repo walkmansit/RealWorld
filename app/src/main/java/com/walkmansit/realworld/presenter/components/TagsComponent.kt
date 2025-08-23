@@ -30,14 +30,14 @@ fun TagsComponent(
     showSearch: Boolean = false,
     onDelete: (tag: String) -> Unit = {},
     onShowSearch: () -> Unit = {},
-){
-
+) {
     FlowRow(
         maxLines = 2,
         horizontalArrangement = Arrangement.Start, // Arrangement.spacedBy(2.dp)
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .padding(2.dp)
+        modifier =
+            Modifier
+                .padding(2.dp),
     ) {
         tags.forEach { tag ->
             TextChipWithIcon(tag, showSearch, onDelete)
@@ -53,17 +53,17 @@ fun TagsComponent(
 fun TagsComponentSimple(
     tags: List<String>,
     onDelete: (tag: String) -> Unit = {},
-){
-
+) {
     FlowRow(
         maxLines = 2,
         horizontalArrangement = Arrangement.Start, // Arrangement.spacedBy(2.dp)
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .padding(2.dp)
+        modifier =
+            Modifier
+                .padding(2.dp),
     ) {
         tags.forEach { tag ->
-            TextChipWithIcon(tag,false, onDelete)
+            TextChipWithIcon(tag, false, onDelete)
         }
     }
 }
@@ -78,29 +78,28 @@ fun TextChipWithIcon(
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .padding(
-                vertical = 2.dp,
-                horizontal = 2.dp
-            )
-            .border(
-                width = 1.dp,
-                color = Color.LightGray,
-                shape = shape
-            )
-            .background(
-                color = White,
-                shape = shape
-            )
-            .clip(shape = shape)
-            .padding(2.dp)
+        modifier =
+            Modifier
+                .padding(
+                    vertical = 2.dp,
+                    horizontal = 2.dp,
+                ).border(
+                    width = 1.dp,
+                    color = Color.LightGray,
+                    shape = shape,
+                ).background(
+                    color = White,
+                    shape = shape,
+                ).clip(shape = shape)
+                .padding(2.dp),
     ) {
         Text(
-            modifier = Modifier
-                .padding(all = 16.dp),
+            modifier =
+                Modifier
+                    .padding(all = 16.dp),
             style = MaterialTheme.typography.bodyMedium,
             text = tag,
-            color = Color.Black
+            color = Color.Black,
         )
         if (canDelete) {
             IconButton(onClick = { onDelete(tag) }) {
@@ -117,13 +116,12 @@ fun TextChipEdit(
 ) {
     Button(onClick = onEdit) {
         Text(
-
-            modifier = Modifier
-                .padding(start = 8.dp, end = 8.dp),
+            modifier =
+                Modifier
+                    .padding(start = 8.dp, end = 8.dp),
             style = MaterialTheme.typography.bodyMedium,
             text = text,
-            color = White
+            color = White,
         )
-
     }
 }
