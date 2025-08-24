@@ -3,20 +3,13 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.devtools.ksp) // Or your alias if different
     alias(libs.plugins.google.dagger.hilt.android)
-
-//    id("com.android.library") version "8.12.1" apply false
-//    kotlin("android") version "1.9.25" apply false // example
-
-//    id("kotlin-kapt")
-
-//    id("com.google.devtools.ksp") version "2.2.10-2.0.2"
-    id("kotlin-parcelize")
-    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
-    id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -27,7 +20,7 @@ android {
 
         applicationId = "com.walkmansit.realworld"
         minSdk = 29
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -158,12 +151,6 @@ dependencies {
 tasks.check {
     dependsOn(tasks.detekt)
     dependsOn(tasks.ktlintCheck)
-}
-
-configurations.all {
-    resolutionStrategy {
-        force("com.google.devtools.ksp:symbol-processing-gradle-plugin:2.2.10-2.0.2")
-    }
 }
 
 // Allow references to generated code
