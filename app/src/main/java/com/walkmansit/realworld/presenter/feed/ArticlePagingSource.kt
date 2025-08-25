@@ -45,6 +45,7 @@ class ArticlePagingSource(
                     nextKey = nextKey,
                 )
             }
+
             is Either.Fail -> {
                 return LoadResult.Error(Exception())
             }

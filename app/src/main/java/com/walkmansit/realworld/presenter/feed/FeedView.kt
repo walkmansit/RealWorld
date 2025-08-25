@@ -55,22 +55,22 @@ fun FeedView(
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
             when (event.navEvent) {
-                is FeedNavigationEvent.RedirectArticle ->
-                    {
-                        navigateArticle(event.navEvent.slug)
-                        viewModel.onIntent(FeedIntent.RedirectComplete)
-                    }
-                is FeedNavigationEvent.RedirectNewArticle ->
-                    {
-                        navigateNewArticle()
-                        viewModel.onIntent(FeedIntent.RedirectComplete)
-                    }
-                is FeedNavigationEvent.RedirectLogin ->
-                    {
-                        navigateLogin()
-                        viewModel.onIntent(FeedIntent.RedirectComplete)
-                    }
-                is FeedNavigationEvent.Undefined -> { }
+                is FeedNavigationEvent.RedirectArticle -> {
+                    navigateArticle(event.navEvent.slug)
+                    viewModel.onIntent(FeedIntent.RedirectComplete)
+                }
+
+                is FeedNavigationEvent.RedirectNewArticle -> {
+                    navigateNewArticle()
+                    viewModel.onIntent(FeedIntent.RedirectComplete)
+                }
+
+                is FeedNavigationEvent.RedirectLogin -> {
+                    navigateLogin()
+                    viewModel.onIntent(FeedIntent.RedirectComplete)
+                }
+
+                is FeedNavigationEvent.Undefined -> {}
             }
         }
     }

@@ -82,117 +82,119 @@ private typealias Ctx = PipelineContext<RegistrationState, RegistrationIntent, R
 
 @HiltViewModel
 class RegistrationViewModel
-    @Inject
-    constructor(
-        private val registrationUseCase: RegistrationUseCase,
-    ) : ViewModel(),
-        Container<RegistrationState, RegistrationIntent, RegistrationAction> {
-        override val store =
-            store(initial = RegistrationState.Content(), scope = viewModelScope) {
+@Inject
+constructor(
+    private val registrationUseCase: RegistrationUseCase,
+) : ViewModel(),
+    Container<RegistrationState, RegistrationIntent, RegistrationAction> {
+    override val store =
+        store(initial = RegistrationState.Content(), scope = viewModelScope) {
 
-                configure {
-                    name = "RegistrationStore"
-                    debuggable = true
-                    actionShareBehavior = ActionShareBehavior.Distribute()
-                    parallelIntents = true
-                }
-
-                recover { e: Exception ->
-                    updateState {
-                        RegistrationState.Error(e.message ?: "Unknown error")
-                    }
-                    null
-                }
-
-                reduce { intent ->
-                    when (intent) {
-                        is RegistrationIntent.UpdateUserName -> updateUsername(intent.username)
-                        is RegistrationIntent.UpdateEmail -> updateEmail(intent.email)
-                        is RegistrationIntent.UpdatePassword -> updatePassword(intent.password)
-                        is RegistrationIntent.Submit -> submit()
-                        is RegistrationIntent.SubmitComplete -> submitComplete(intent.result)
-                        is RegistrationIntent.RedirectLogin -> action(RegistrationAction.RedirectLogin)
-                    }
-                }
+            configure {
+                name = "RegistrationStore"
+                debuggable = true
+                actionShareBehavior = ActionShareBehavior.Distribute()
+                parallelIntents = true
             }
 
-        private suspend fun Ctx.updateUsername(newUsername: String) {
-            updateStateOrThrow<RegistrationState.Content, _> {
-                copy(
-                    fields =
-                        with(fields) {
-                            copy(username = username.copy(text = newUsername))
-                        },
-                )
+            recover { e: Exception ->
+                updateState {
+                    RegistrationState.Error(e.message ?: "Unknown error")
+                }
+                null
+            }
+
+            reduce { intent ->
+                when (intent) {
+                    is RegistrationIntent.UpdateUserName -> updateUsername(intent.username)
+                    is RegistrationIntent.UpdateEmail -> updateEmail(intent.email)
+                    is RegistrationIntent.UpdatePassword -> updatePassword(intent.password)
+                    is RegistrationIntent.Submit -> submit()
+                    is RegistrationIntent.SubmitComplete -> submitComplete(intent.result)
+                    is RegistrationIntent.RedirectLogin -> action(RegistrationAction.RedirectLogin)
+                }
             }
         }
 
-        private suspend fun Ctx.updateEmail(newEmail: String) {
-            updateStateOrThrow<RegistrationState.Content, _> {
-                copy(
-                    fields =
-                        with(fields) {
-                            copy(email = email.copy(text = newEmail))
-                        },
-                )
-            }
+    private suspend fun Ctx.updateUsername(newUsername: String) {
+        updateStateOrThrow<RegistrationState.Content, _> {
+            copy(
+                fields =
+                    with(fields) {
+                        copy(username = username.copy(text = newUsername))
+                    },
+            )
         }
+    }
 
-        private suspend fun Ctx.updatePassword(newPassword: String) {
-            updateStateOrThrow<RegistrationState.Content, _> {
-                copy(
-                    fields =
-                        with(fields) {
-                            copy(password = password.copy(text = newPassword))
-                        },
-                )
-            }
+    private suspend fun Ctx.updateEmail(newEmail: String) {
+        updateStateOrThrow<RegistrationState.Content, _> {
+            copy(
+                fields =
+                    with(fields) {
+                        copy(email = email.copy(text = newEmail))
+                    },
+            )
         }
+    }
 
-        private suspend fun Ctx.submitComplete(result: Either<Either<CommonError, RegistrationFailed>, User>) {
-            updateStateOrThrow<RegistrationState.LoadingOnSubmit, _> {
-                when (result) {
-                    is Either.Fail -> {
-                        val fail = result.value
-                        when (fail) {
-                            is Either.Fail -> {
-                                action(RegistrationAction.ShowMessage(fail.value.error))
-                                RegistrationState.Content(fields)
-                            }
-                            is Either.Success -> {
-                                with(fields) {
-                                    val newFields =
-                                        copy(
-                                            username = username.copy(error = fail.value.usernameError),
-                                            email = email.copy(error = fail.value.emailError),
-                                            password = password.copy(error = fail.value.passwordError),
-                                        )
-                                    RegistrationState.Content(newFields)
-                                }
+    private suspend fun Ctx.updatePassword(newPassword: String) {
+        updateStateOrThrow<RegistrationState.Content, _> {
+            copy(
+                fields =
+                    with(fields) {
+                        copy(password = password.copy(text = newPassword))
+                    },
+            )
+        }
+    }
+
+    private suspend fun Ctx.submitComplete(result: Either<Either<CommonError, RegistrationFailed>, User>) {
+        updateStateOrThrow<RegistrationState.LoadingOnSubmit, _> {
+            when (result) {
+                is Either.Fail -> {
+                    val fail = result.value
+                    when (fail) {
+                        is Either.Fail -> {
+                            action(RegistrationAction.ShowMessage(fail.value.error))
+                            RegistrationState.Content(fields)
+                        }
+
+                        is Either.Success -> {
+                            with(fields) {
+                                val newFields =
+                                    copy(
+                                        username = username.copy(error = fail.value.usernameError),
+                                        email = email.copy(error = fail.value.emailError),
+                                        password = password.copy(error = fail.value.passwordError),
+                                    )
+                                RegistrationState.Content(newFields)
                             }
                         }
                     }
-                    is Either.Success -> {
-                        action(RegistrationAction.RedirectFeed(result.value.username))
-                        RegistrationState.Content()
-                    }
-                }
-            }
-        }
-
-        private suspend fun Ctx.submit() {
-            updateStateOrThrow<RegistrationState.Content, _> {
-                viewModelScope.launch {
-                    val regUserResponse =
-                        registrationUseCase(
-                            fields.username.text,
-                            fields.email.text,
-                            fields.password.text,
-                        )
-                    intent(RegistrationIntent.SubmitComplete(regUserResponse))
                 }
 
-                RegistrationState.LoadingOnSubmit(fields)
+                is Either.Success -> {
+                    action(RegistrationAction.RedirectFeed(result.value.username))
+                    RegistrationState.Content()
+                }
             }
         }
     }
+
+    private suspend fun Ctx.submit() {
+        updateStateOrThrow<RegistrationState.Content, _> {
+            viewModelScope.launch {
+                val regUserResponse =
+                    registrationUseCase(
+                        fields.username.text,
+                        fields.email.text,
+                        fields.password.text,
+                    )
+                intent(RegistrationIntent.SubmitComplete(regUserResponse))
+            }
+
+            RegistrationState.LoadingOnSubmit(fields)
+        }
+    }
+}

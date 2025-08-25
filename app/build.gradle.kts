@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.detektPlugins
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
@@ -32,11 +31,12 @@ android {
 
     buildTypes {
         debug {
+            isMinifyEnabled = false
             buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
         }
         release {
             buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -83,6 +83,8 @@ ktlint {
 }
 
 dependencies {
+    implementation(project(":domain"))
+    implementation(project(":data"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -94,31 +96,15 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
 
-    implementation(libs.androidx.datastore.core.android)
-    implementation(libs.androidx.datastore.preferences.core)
-    implementation(libs.datastore.preferences)
     implementation(libs.androidx.paging.common.android)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.constraintlayout.compose)
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-
+    // /hilt
     implementation(libs.hilt.android.core)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
-
-    // Retrofit
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation(libs.okhttp)
-    implementation(libs.logging.interceptor)
 
     // Material icons
     implementation(libs.androidx.material.icons.core)
@@ -136,6 +122,14 @@ dependencies {
 
     // Immutable collections
     implementation(libs.kotlinx.collections.immutable)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
     // detect
     detektPlugins(libs.detekt.formatting)

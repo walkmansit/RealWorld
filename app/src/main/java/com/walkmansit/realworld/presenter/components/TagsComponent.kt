@@ -83,14 +83,17 @@ fun TextChipWithIcon(
                 .padding(
                     vertical = 2.dp,
                     horizontal = 2.dp,
-                ).border(
+                )
+                .border(
                     width = 1.dp,
                     color = Color.LightGray,
                     shape = shape,
-                ).background(
+                )
+                .background(
                     color = White,
                     shape = shape,
-                ).clip(shape = shape)
+                )
+                .clip(shape = shape)
                 .padding(2.dp),
     ) {
         Text(

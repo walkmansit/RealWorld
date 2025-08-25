@@ -67,140 +67,140 @@ private typealias TagsCtx = PipelineContext<TagState, TagsIntent, TagAction>
 
 @HiltViewModel
 class TagsViewModel
-    @Inject
-    constructor(
-        private val getTagsUseCase: GetTagsUseCase,
-    ) : ViewModel(),
-        Container<TagState, TagsIntent, TagAction> {
-        override val store =
-            store(initial = TagState.Loading, scope = viewModelScope) {
-                configure {
-                    name = "TagStore"
-                    debuggable = true
-                    actionShareBehavior = ActionShareBehavior.Distribute()
-                    parallelIntents = true
-                }
-
-                recover { e: Exception ->
-                    updateState {
-                        TagState.Error(e.message ?: "Unknown error")
-                    }
-                    null
-                }
-
-                whileSubscribed {
-                    loadTags()
-                }
-
-                reduce { intent ->
-                    when (intent) {
-                        is TagsIntent.UpdateSearchQuery -> onUpdateSearchQuery(intent.query)
-                        is TagsIntent.SubmitNewTag -> submitNewTag(intent.tag)
-                        is TagsIntent.TagsLoaded -> onTagsLoaded(intent.result)
-                        is TagsIntent.DeleteTag -> deleteTag(intent.tag)
-                        is TagsIntent.AddTag -> addTag(intent.tag)
-                    }
-                }
+@Inject
+constructor(
+    private val getTagsUseCase: GetTagsUseCase,
+) : ViewModel(),
+    Container<TagState, TagsIntent, TagAction> {
+    override val store =
+        store(initial = TagState.Loading, scope = viewModelScope) {
+            configure {
+                name = "TagStore"
+                debuggable = true
+                actionShareBehavior = ActionShareBehavior.Distribute()
+                parallelIntents = true
             }
 
-        private val selectedTags = mutableSetOf<String>()
-        private val allTags = mutableSetOf<String>()
+            recover { e: Exception ->
+                updateState {
+                    TagState.Error(e.message ?: "Unknown error")
+                }
+                null
+            }
 
-        private suspend fun TagsCtx.addTag(tag: String) {
-            if (allTags.contains(tag)) {
-                updateStateOrThrow<TagState.Content, _> {
-                    allTags.remove(tag)
-                    selectedTags.add(tag)
-                    with(content) {
-                        copy(
-                            content =
-                                copy(
-                                    selectedTags = selectedTags.toList(),
-                                    allTags = allTags.toList(),
-                                    searchResult = searchResult.minus(tag),
-                                ),
-                        )
-                    }
+            whileSubscribed {
+                loadTags()
+            }
+
+            reduce { intent ->
+                when (intent) {
+                    is TagsIntent.UpdateSearchQuery -> onUpdateSearchQuery(intent.query)
+                    is TagsIntent.SubmitNewTag -> submitNewTag(intent.tag)
+                    is TagsIntent.TagsLoaded -> onTagsLoaded(intent.result)
+                    is TagsIntent.DeleteTag -> deleteTag(intent.tag)
+                    is TagsIntent.AddTag -> addTag(intent.tag)
                 }
             }
         }
 
-        private suspend fun TagsCtx.deleteTag(tag: String) {
-            if (selectedTags.contains(tag)) {
-                updateStateOrThrow<TagState.Content, _> {
-                    selectedTags.remove(tag)
-                    allTags.add(tag)
-                    with(content) {
-                        copy(
-                            content =
-                                copy(
-                                    selectedTags = selectedTags.toList(),
-                                    allTags = allTags.toList(),
-                                ),
-                        )
-                    }
-                }
-            }
-        }
+    private val selectedTags = mutableSetOf<String>()
+    private val allTags = mutableSetOf<String>()
 
-        private suspend fun TagsCtx.submitNewTag(tag: String) {
-            if (tag.isNotEmpty() &&
-                selectedTags.none { it.lowercase() == tag } &&
-                allTags.none { it.lowercase() == tag }
-            ) {
-                updateStateOrThrow<TagState.Content, _> {
-                    selectedTags.add(tag)
-                    with(content) {
-                        copy(
-                            content =
-                                copy(
-                                    selectedTags = selectedTags.toList(),
-                                ),
-                        )
-                    }
-                }
-            }
-        }
-
-        private fun filterTags(
-            query: String,
-            tags: List<String>,
-        ): List<String> = tags.filter { tag -> tag.contains(query) }
-
-        private suspend fun TagsCtx.onUpdateSearchQuery(query: String) {
+    private suspend fun TagsCtx.addTag(tag: String) {
+        if (allTags.contains(tag)) {
             updateStateOrThrow<TagState.Content, _> {
+                allTags.remove(tag)
+                selectedTags.add(tag)
                 with(content) {
                     copy(
                         content =
                             copy(
-                                searchQuery = content.searchQuery.copy(text = query),
-                                searchResult = filterTags(query, content.allTags),
+                                selectedTags = selectedTags.toList(),
+                                allTags = allTags.toList(),
+                                searchResult = searchResult.minus(tag),
                             ),
                     )
                 }
             }
         }
+    }
 
-        private suspend fun TagsCtx.onTagsLoaded(tagsResult: Either<Boolean, List<String>>) {
-            updateStateOrThrow<TagState.Loading, _> {
-                when (tagsResult) {
-                    is Either.Fail -> TagState.Error("Failed to load tags")
-                    is Either.Success -> {
-                        allTags.addAll(tagsResult.value)
-                        TagState.Content(
-                            content =
-                                TagFields(
-                                    allTags = tagsResult.value,
-                                ),
-                        )
-                    }
+    private suspend fun TagsCtx.deleteTag(tag: String) {
+        if (selectedTags.contains(tag)) {
+            updateStateOrThrow<TagState.Content, _> {
+                selectedTags.remove(tag)
+                allTags.add(tag)
+                with(content) {
+                    copy(
+                        content =
+                            copy(
+                                selectedTags = selectedTags.toList(),
+                                allTags = allTags.toList(),
+                            ),
+                    )
                 }
             }
         }
+    }
 
-        private fun TagsCtx.loadTags() {
-            viewModelScope.launch {
-                intent(TagsIntent.TagsLoaded(getTagsUseCase()))
+    private suspend fun TagsCtx.submitNewTag(tag: String) {
+        if (tag.isNotEmpty() &&
+            selectedTags.none { it.lowercase() == tag } &&
+            allTags.none { it.lowercase() == tag }
+        ) {
+            updateStateOrThrow<TagState.Content, _> {
+                selectedTags.add(tag)
+                with(content) {
+                    copy(
+                        content =
+                            copy(
+                                selectedTags = selectedTags.toList(),
+                            ),
+                    )
+                }
             }
         }
     }
+
+    private fun filterTags(
+        query: String,
+        tags: List<String>,
+    ): List<String> = tags.filter { tag -> tag.contains(query) }
+
+    private suspend fun TagsCtx.onUpdateSearchQuery(query: String) {
+        updateStateOrThrow<TagState.Content, _> {
+            with(content) {
+                copy(
+                    content =
+                        copy(
+                            searchQuery = content.searchQuery.copy(text = query),
+                            searchResult = filterTags(query, content.allTags),
+                        ),
+                )
+            }
+        }
+    }
+
+    private suspend fun TagsCtx.onTagsLoaded(tagsResult: Either<Boolean, List<String>>) {
+        updateStateOrThrow<TagState.Loading, _> {
+            when (tagsResult) {
+                is Either.Fail -> TagState.Error("Failed to load tags")
+                is Either.Success -> {
+                    allTags.addAll(tagsResult.value)
+                    TagState.Content(
+                        content =
+                            TagFields(
+                                allTags = tagsResult.value,
+                            ),
+                    )
+                }
+            }
+        }
+    }
+
+    private fun TagsCtx.loadTags() {
+        viewModelScope.launch {
+            intent(TagsIntent.TagsLoaded(getTagsUseCase()))
+        }
+    }
+}

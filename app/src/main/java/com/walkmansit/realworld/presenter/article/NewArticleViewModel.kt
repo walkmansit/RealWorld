@@ -73,116 +73,117 @@ private typealias Ctx = PipelineContext<NewArticleState, NewArticleIntent, NewAr
 
 @HiltViewModel
 class NewArticleViewModel
-    @Inject
-    constructor(
-        private val newArticleUseCase: NewArticleUseCase,
-        private val getTagsUseCase: GetTagsUseCase,
-    ) : ViewModel(),
-        Container<NewArticleState, NewArticleIntent, NewArticleAction> {
-        override val store =
-            store(initial = NewArticleState.Content(), viewModelScope) {
-                configure {
-                    name = "NewArticleStore"
-                    debuggable = true
-                    actionShareBehavior = ActionShareBehavior.Distribute()
-                    parallelIntents = true
-                }
-
-                recover { e: Exception ->
-                    updateState {
-                        NewArticleState.Error(e.message ?: "Unknown error")
-                    }
-                    null
-                }
-
-                reduce { intent ->
-                    when (intent) {
-                        is NewArticleIntent.UpdateTitle -> updateTitle(intent.title)
-                        is NewArticleIntent.UpdateDescription -> updateDescription(intent.description)
-                        is NewArticleIntent.UpdateBody -> updateBody(intent.body)
-                        is NewArticleIntent.Submit -> submitNewArticle()
-                        is NewArticleIntent.SubmitComplete -> {}
-                    }
-                }
+@Inject
+constructor(
+    private val newArticleUseCase: NewArticleUseCase,
+    private val getTagsUseCase: GetTagsUseCase,
+) : ViewModel(),
+    Container<NewArticleState, NewArticleIntent, NewArticleAction> {
+    override val store =
+        store(initial = NewArticleState.Content(), viewModelScope) {
+            configure {
+                name = "NewArticleStore"
+                debuggable = true
+                actionShareBehavior = ActionShareBehavior.Distribute()
+                parallelIntents = true
             }
 
-        private suspend fun Ctx.updateDescription(newValue: String) {
-            updateStateOrThrow<NewArticleState.Content, _> {
-                with(content) {
-                    copy(
-                        content =
-                            copy(
-                                description = description.copy(text = newValue),
-                            ),
-                    )
+            recover { e: Exception ->
+                updateState {
+                    NewArticleState.Error(e.message ?: "Unknown error")
+                }
+                null
+            }
+
+            reduce { intent ->
+                when (intent) {
+                    is NewArticleIntent.UpdateTitle -> updateTitle(intent.title)
+                    is NewArticleIntent.UpdateDescription -> updateDescription(intent.description)
+                    is NewArticleIntent.UpdateBody -> updateBody(intent.body)
+                    is NewArticleIntent.Submit -> submitNewArticle()
+                    is NewArticleIntent.SubmitComplete -> {}
                 }
             }
         }
 
-        private suspend fun Ctx.updateTitle(newValue: String) {
-            updateStateOrThrow<NewArticleState.Content, _> {
-                with(content) {
-                    copy(
-                        content =
-                            copy(
-                                title = title.copy(text = newValue),
-                            ),
-                    )
-                }
-            }
-        }
-
-        private suspend fun Ctx.updateBody(newValue: String) {
-            updateStateOrThrow<NewArticleState.Content, _> {
-                with(content) {
-                    copy(
-                        content =
-                            copy(
-                                body = body.copy(text = newValue),
-                            ),
-                    )
-                }
-            }
-        }
-
-        private suspend fun Ctx.submitComplete(result: Either<NewArticleFailed, Article>) {
-            updateStateOrThrow<NewArticleState.LoadingOnSubmit, _> {
-                when (result) {
-                    is Either.Fail -> {
-                        with(content) {
-                            val newFields =
-                                copy(
-                                    description = description.copy(error = result.value.descriptionError),
-                                    title = title.copy(error = result.value.titleError),
-                                    body = body.copy(error = result.value.bodyError),
-                                )
-                            NewArticleState.Content(newFields)
-                        }
-                    }
-                    is Either.Success -> {
-                        action(NewArticleAction.SubmitComplete)
-                        NewArticleState.Content()
-                    }
-                }
-            }
-        }
-
-        private suspend fun Ctx.submitNewArticle() {
-            updateStateOrThrow<NewArticleState.Content, _> {
-                with(content) {
-                    viewModelScope.launch {
-                        val newArticleResponse =
-                            newArticleUseCase(
-                                title = title.text,
-                                description = description.text,
-                                body = body.text,
-                                tags = listOf(),
-                            )
-
-                        intent(NewArticleIntent.SubmitComplete(newArticleResponse))
-                    }
-                }
-                NewArticleState.LoadingOnSubmit(content)
+    private suspend fun Ctx.updateDescription(newValue: String) {
+        updateStateOrThrow<NewArticleState.Content, _> {
+            with(content) {
+                copy(
+                    content =
+                        copy(
+                            description = description.copy(text = newValue),
+                        ),
+                )
             }
         }
     }
+
+    private suspend fun Ctx.updateTitle(newValue: String) {
+        updateStateOrThrow<NewArticleState.Content, _> {
+            with(content) {
+                copy(
+                    content =
+                        copy(
+                            title = title.copy(text = newValue),
+                        ),
+                )
+            }
+        }
+    }
+
+    private suspend fun Ctx.updateBody(newValue: String) {
+        updateStateOrThrow<NewArticleState.Content, _> {
+            with(content) {
+                copy(
+                    content =
+                        copy(
+                            body = body.copy(text = newValue),
+                        ),
+                )
+            }
+        }
+    }
+
+    private suspend fun Ctx.submitComplete(result: Either<NewArticleFailed, Article>) {
+        updateStateOrThrow<NewArticleState.LoadingOnSubmit, _> {
+            when (result) {
+                is Either.Fail -> {
+                    with(content) {
+                        val newFields =
+                            copy(
+                                description = description.copy(error = result.value.descriptionError),
+                                title = title.copy(error = result.value.titleError),
+                                body = body.copy(error = result.value.bodyError),
+                            )
+                        NewArticleState.Content(newFields)
+                    }
+                }
+
+                is Either.Success -> {
+                    action(NewArticleAction.SubmitComplete)
+                    NewArticleState.Content()
+                }
+            }
+        }
+    }
+
+    private suspend fun Ctx.submitNewArticle() {
+        updateStateOrThrow<NewArticleState.Content, _> {
+            with(content) {
+                viewModelScope.launch {
+                    val newArticleResponse =
+                        newArticleUseCase(
+                            title = title.text,
+                            description = description.text,
+                            body = body.text,
+                            tags = listOf(),
+                        )
+
+                    intent(NewArticleIntent.SubmitComplete(newArticleResponse))
+                }
+            }
+            NewArticleState.LoadingOnSubmit(content)
+        }
+    }
+}

@@ -1,7 +1,7 @@
 build:
   maxIssues: 0                # Прерывать сборку при наличии нарушений
   excludeCorrectable: false   # Не исключать автоисправляемые нарушения
-  weights: {}                 # Можно указать веса для правил (по умолчанию все равны)
+  weights: { }                 # Можно указать веса для правил (по умолчанию все равны)
 
 config:
   validation: true            # Проверять корректность самого конфига
@@ -50,7 +50,7 @@ naming:
     active: true
     # Для обычных проектов — имена функций с маленькой буквы
     # Если используешь Compose — можно добавить ignoreAnnotated: [Composable]
-    ignoreAnnotated: [Composable]
+    ignoreAnnotated: [ Composable ]
     functionPattern: '^[a-z][a-zA-Z0-9]*$'
   VariableNaming:
     active: true
@@ -67,11 +67,11 @@ complexity:
   active: true
   LongMethod:
     active: true
-    ignoreAnnotated: [Composable]
+    ignoreAnnotated: [ Composable ]
     threshold: 60              # метод не должен быть длиннее 60 строк
   LongParameterList:
     active: true
-    ignoreAnnotated: [Composable]
+    ignoreAnnotated: [ Composable ]
     functionThreshold: 6               # не больше 6 параметров
     constructorThreshold: 6               # не больше 6 параметров
   TooManyFunctions:

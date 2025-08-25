@@ -28,22 +28,22 @@ fun SplashScreen(
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
             when (event.navEvent) {
-                is SplashNavigationEvent.RedirectRegistration ->
-                    {
-                        navigateRegistration()
-                        viewModel.consumeNavEvent()
-                    }
-                is SplashNavigationEvent.RedirectLogin ->
-                    {
-                        navigateLogin()
-                        viewModel.consumeNavEvent()
-                    }
-                is SplashNavigationEvent.RedirectFeed ->
-                    {
-                        navigateFeed(event.navEvent.username)
-                        viewModel.consumeNavEvent()
-                    }
-                is SplashNavigationEvent.Undefined -> { }
+                is SplashNavigationEvent.RedirectRegistration -> {
+                    navigateRegistration()
+                    viewModel.consumeNavEvent()
+                }
+
+                is SplashNavigationEvent.RedirectLogin -> {
+                    navigateLogin()
+                    viewModel.consumeNavEvent()
+                }
+
+                is SplashNavigationEvent.RedirectFeed -> {
+                    navigateFeed(event.navEvent.username)
+                    viewModel.consumeNavEvent()
+                }
+
+                is SplashNavigationEvent.Undefined -> {}
             }
         }
     }

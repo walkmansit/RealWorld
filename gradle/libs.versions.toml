@@ -1,12 +1,13 @@
 [versions]
 detektFormatting = "1.23.8"
-routeArgs = "2.5.0"
 agp = "8.12.1"
 constraintlayoutCompose = "1.1.1"
 converterGson = "3.0.0"
 datastorePreferences = "1.1.7"
 datastorePreferencesCore = "1.1.7"
 kotlin = "2.2.10"
+kotlinxCoroutinesCore = "1.10.2"
+kotlinxCoroutinesTest = "1.10.2"
 ksp = "2.2.10-2.0.2"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -20,7 +21,6 @@ loggingInterceptor = "5.1.0"
 navigationCompose = "2.9.3"
 datastoreCoreAndroid = "1.1.7"
 hilt = "2.57"
-hiltExt = "1.2.0"
 androidxHiltNavigationCompose = "1.2.0"
 pagingCompose = "3.3.6"
 retrofit = "3.0.0"
@@ -28,6 +28,8 @@ okhttp = "5.1.0"
 flowmvi = "3.1.0"
 ktlint = "13.1.0"
 detekt = "1.23.8"
+appcompat = "1.7.1"
+material = "1.12.0"
 
 
 [libraries]
@@ -63,6 +65,8 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-datastore-core-android = { group = "androidx.datastore", name = "datastore-core-android", version.ref = "datastoreCoreAndroid" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
@@ -82,6 +86,8 @@ flowmvi-debugger = { module = "pro.respawn.flowmvi:debugger-plugin", version.ref
 # Essenty (Decompose) integration
 flowmvi-essenty = { module = "pro.respawn.flowmvi:essenty", version.ref = "flowmvi" }
 flowmvi-essenty-compose = { module = "pro.respawn.flowmvi:essenty-compose", version.ref = "flowmvi" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 
 [plugins]
@@ -95,3 +101,5 @@ kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref =
 # detekt and ktlint
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }

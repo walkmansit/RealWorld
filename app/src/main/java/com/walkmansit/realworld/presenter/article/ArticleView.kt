@@ -76,9 +76,11 @@ fun ArticleView(
             is ArticleUiState.IsLoading -> {
                 CircularProgress()
             }
+
             is ArticleUiState.HasError -> {
                 ErrorMessage(message = (uiState as ArticleUiState.HasError).errorMsg)
             }
+
             is ArticleUiState.ArticleUiData -> {
                 ViewArticle(
                     modifier,

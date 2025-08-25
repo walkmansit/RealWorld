@@ -64,13 +64,13 @@ sealed class FeedNavigationEvent {
 
 @HiltViewModel
 class FeedViewModel
-    @Inject
-    constructor(
-        private val getArticlesUseCase: GetArticlesUseCase,
-        private val logoutUseCase: LogoutUseCase,
-        savedStateHandle: SavedStateHandle,
-    ) : ViewModel() {
-        private val username: String = savedStateHandle[FeedDestinationsArgs.USERNAME_ARG]!!
+@Inject
+constructor(
+    private val getArticlesUseCase: GetArticlesUseCase,
+    private val logoutUseCase: LogoutUseCase,
+    savedStateHandle: SavedStateHandle,
+) : ViewModel() {
+    private val username: String = savedStateHandle[FeedDestinationsArgs.USERNAME_ARG]!!
 
 //    private lateinit var _user: User
 //
@@ -82,18 +82,18 @@ class FeedViewModel
 //        }
 //    }
 
-        private val _uiState = MutableStateFlow(FeedUiState())
-        val uiState = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(FeedUiState())
+    val uiState = _uiState.asStateFlow()
 
-        private val search: StateFlow<ArticlesFilter> =
-            _uiState
-                .asStateFlow()
-                .map { it.selectedFilter.toArticlesFilter(username) }
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(),
-                    initialValue = ArticlesFilter(_uiState.value.selectedFilter),
-                )
+    private val search: StateFlow<ArticlesFilter> =
+        _uiState
+            .asStateFlow()
+            .map { it.selectedFilter.toArticlesFilter(username) }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = ArticlesFilter(_uiState.value.selectedFilter),
+            )
 
 //    private val search : StateFlow<ArticlesFilter> = _filter.asStateFlow()
 //        .stateIn(
@@ -102,55 +102,55 @@ class FeedViewModel
 //            initialValue = ArticlesFilter(),
 //        )
 
-        fun onIntent(intent: FeedIntent) {
-            when (intent) {
-                is FeedIntent.ChangeFilter -> changeFilter(intent.filter)
-                is FeedIntent.RedirectNewArticle -> redirectNewArticle()
-                is FeedIntent.RedirectArticle -> redirectArticle(intent.slug)
-                is FeedIntent.RedirectComplete -> redirectComplete()
-                is FeedIntent.LogOut -> logout()
-            }
+    fun onIntent(intent: FeedIntent) {
+        when (intent) {
+            is FeedIntent.ChangeFilter -> changeFilter(intent.filter)
+            is FeedIntent.RedirectNewArticle -> redirectNewArticle()
+            is FeedIntent.RedirectArticle -> redirectArticle(intent.slug)
+            is FeedIntent.RedirectComplete -> redirectComplete()
+            is FeedIntent.LogOut -> logout()
+        }
+    }
+
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    val articlesResult =
+        search.debounce(300.milliseconds).flatMapLatest { filter ->
+            Pager(
+                PagingConfig(
+                    pageSize = FEED_PAGE_SIZE,
+                    enablePlaceholders = false,
+                ),
+            ) {
+                ArticlePagingSource(
+                    getArticlesUseCase,
+                    filter,
+                    viewModelScope,
+                )
+            }.flow.cachedIn(viewModelScope)
         }
 
-        @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-        val articlesResult =
-            search.debounce(300.milliseconds).flatMapLatest { filter ->
-                Pager(
-                    PagingConfig(
-                        pageSize = FEED_PAGE_SIZE,
-                        enablePlaceholders = false,
-                    ),
-                ) {
-                    ArticlePagingSource(
-                        getArticlesUseCase,
-                        filter,
-                        viewModelScope,
-                    )
-                }.flow.cachedIn(viewModelScope)
-            }
+    private fun redirectNewArticle() {
+        _uiState.update { it.copy(navEvent = FeedNavigationEvent.RedirectNewArticle) }
+    }
 
-        private fun redirectNewArticle() {
-            _uiState.update { it.copy(navEvent = FeedNavigationEvent.RedirectNewArticle) }
-        }
+    private fun redirectArticle(slug: String) {
+        _uiState.update { it.copy(navEvent = FeedNavigationEvent.RedirectArticle(slug)) }
+    }
 
-        private fun redirectArticle(slug: String) {
-            _uiState.update { it.copy(navEvent = FeedNavigationEvent.RedirectArticle(slug)) }
-        }
+    private fun changeFilter(filter: ArticleFilterType) {
+        _uiState.update { it.copy(selectedFilter = filter) }
+    }
 
-        private fun changeFilter(filter: ArticleFilterType) {
-            _uiState.update { it.copy(selectedFilter = filter) }
-        }
+    private fun redirectComplete() {
+        _uiState.update { it.copy(navEvent = FeedNavigationEvent.Undefined) }
+    }
 
-        private fun redirectComplete() {
-            _uiState.update { it.copy(navEvent = FeedNavigationEvent.Undefined) }
-        }
-
-        private fun logout() {
-            viewModelScope.launch {
-                val result = logoutUseCase.invoke()
-                if (result) {
-                    _uiState.update { it.copy(navEvent = FeedNavigationEvent.RedirectLogin) }
-                }
+    private fun logout() {
+        viewModelScope.launch {
+            val result = logoutUseCase.invoke()
+            if (result) {
+                _uiState.update { it.copy(navEvent = FeedNavigationEvent.RedirectLogin) }
             }
         }
     }
+}
