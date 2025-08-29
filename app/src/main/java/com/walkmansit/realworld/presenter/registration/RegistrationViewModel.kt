@@ -2,6 +2,7 @@ package com.walkmansit.realworld.presenter.registration
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.walkmansit.realworld.BuildConfig
 import com.walkmansit.realworld.domain.model.CommonError
 import com.walkmansit.realworld.domain.model.RegistrationFailed
 import com.walkmansit.realworld.domain.model.User
@@ -16,6 +17,7 @@ import pro.respawn.flowmvi.api.MVIAction
 import pro.respawn.flowmvi.api.MVIIntent
 import pro.respawn.flowmvi.api.MVIState
 import pro.respawn.flowmvi.api.PipelineContext
+import pro.respawn.flowmvi.dsl.lazyStore
 import pro.respawn.flowmvi.dsl.store
 import pro.respawn.flowmvi.dsl.updateStateOrThrow
 import pro.respawn.flowmvi.plugins.recover
@@ -87,12 +89,11 @@ constructor(
     private val registrationUseCase: RegistrationUseCase,
 ) : ViewModel(),
     Container<RegistrationState, RegistrationIntent, RegistrationAction> {
-    override val store =
-        store(initial = RegistrationState.Content(), scope = viewModelScope) {
+    override val store by lazyStore(initial = RegistrationState.Content(), scope = viewModelScope) {
 
             configure {
                 name = "RegistrationStore"
-                debuggable = true
+                debuggable = BuildConfig.DEBUG
                 actionShareBehavior = ActionShareBehavior.Distribute()
                 parallelIntents = true
             }

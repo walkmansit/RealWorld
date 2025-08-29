@@ -3,6 +3,7 @@ package com.walkmansit.realworld.presenter.feed
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -36,8 +37,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.walkmansit.realworld.domain.model.ArticleFilterType
 import com.walkmansit.realworld.presenter.article.PaginatedLazyColumn
+import com.walkmansit.realworld.presenter.components.CircularProgress
 import com.walkmansit.realworld.presenter.feed.MAP.filterMapping
+import com.walkmansit.realworld.presenter.registration.RegistrationAction
+import com.walkmansit.realworld.presenter.registration.RegistrationIntent
+import com.walkmansit.realworld.presenter.registration.RegistrationState
+import com.walkmansit.realworld.presenter.registration.RegistrationViewContent
 import kotlinx.coroutines.flow.collectLatest
+import pro.respawn.flowmvi.api.IntentReceiver
+import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,31 +57,40 @@ fun FeedView(
     navigateLogin: () -> Unit,
     viewModel: FeedViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
-) {
+) =  with(viewModel.store) {
     Log.d("FeedView", "FeedView recomposition")
 
-    LaunchedEffect(key1 = true) {
-        viewModel.uiState.collectLatest { event ->
-            when (event.navEvent) {
-                is FeedNavigationEvent.RedirectArticle -> {
-                    navigateArticle(event.navEvent.slug)
-                    viewModel.onIntent(FeedIntent.RedirectComplete)
-                }
-
-                is FeedNavigationEvent.RedirectNewArticle -> {
-                    navigateNewArticle()
-                    viewModel.onIntent(FeedIntent.RedirectComplete)
-                }
-
-                is FeedNavigationEvent.RedirectLogin -> {
-                    navigateLogin()
-                    viewModel.onIntent(FeedIntent.RedirectComplete)
-                }
-
-                is FeedNavigationEvent.Undefined -> {}
-            }
+    val state by subscribe { action ->
+        when (action) {
+            is FeedAction.RedirectLogin -> navigateLogin()
+            is FeedAction.RedirectArticle -> navigateArticle(action.slug)
+            is FeedAction.RedirectNewArticle -> navigateNewArticle()
         }
     }
+
+
+//    LaunchedEffect(key1 = true) {
+//        viewModel.uiState.collectLatest { event ->
+//            when (event.navEvent) {
+//                is FeedAction.RedirectArticle -> {
+//                    navigateArticle(event.navEvent.slug)
+//                    viewModel.onIntent(FeedIntent.RedirectComplete)
+//                }
+//
+//                is FeedAction.RedirectNewArticle -> {
+//                    navigateNewArticle()
+//                    viewModel.onIntent(FeedIntent.RedirectComplete)
+//                }
+//
+//                is FeedAction.RedirectLogin -> {
+//                    navigateLogin()
+//                    viewModel.onIntent(FeedIntent.RedirectComplete)
+//                }
+//
+//                is FeedAction.Undefined -> {}
+//            }
+//        }
+//    }
 
     // State to track the scroll position
 //    val listState = rememberLazyListState()
@@ -83,7 +100,7 @@ fun FeedView(
 //    var isLoading by remember { mutableStateOf(false) }
     // Function to simulate loading more items (with a delay)
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+//    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -97,11 +114,13 @@ fun FeedView(
                 title = {
                     ArticleFilterMenu(
                         modifier,
-                        uiState.selectedFilter,
-                    ) { viewModel.onIntent(FeedIntent.LogOut) }
+                        state.filter,
+                    ) {
+                        intent(FeedIntent.ChangeFilter(it))
+                    }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.onIntent(FeedIntent.LogOut) }) {
+                    IconButton(onClick = { intent(FeedIntent.LogOut) }) {
                         Icon(
                             imageVector = Icons.Filled.AirlineStops,
                             contentDescription = "Logout",
@@ -112,26 +131,42 @@ fun FeedView(
         },
         snackbarHost = { SnackbarHost(snackBarHostState) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.onIntent(FeedIntent.RedirectNewArticle) }) {
+            FloatingActionButton(onClick = { intent(FeedIntent.RedirectNewArticle) }) {
                 Icon(Icons.Filled.Done, "Submit")
             }
         },
     ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
-            Column {
-                PaginatedLazyColumn(
-                    modifier,
-                    viewModel.articlesResult,
-                    onArticleClick = { article ->
-                        viewModel.onIntent(FeedIntent.RedirectArticle(article.slug))
-                    },
-                    {},
-//                    listState = listState,
-//                    isLoading = isLoading
-                )
-            }
+        FeedViewContainer(padding, state)
+    }
+}
+
+
+
+@Composable
+fun IntentReceiver<FeedIntent>.FeedViewContainer(padding : PaddingValues, state: FeedState) {
+    when (state) {
+        is FeedState.Loading -> CircularProgress()
+        is FeedState.LoadingOnSubmit -> CircularProgress()
+        is FeedState.Error -> Text(text = state.message)
+        is FeedState.Content -> FeedViewContent(padding , state)
+    }
+}
+
+@Composable
+fun IntentReceiver<FeedIntent>.FeedViewContent(padding : PaddingValues, state: FeedState.Content) {
+    Box(modifier = Modifier.padding(padding)) {
+        Column {
+            PaginatedLazyColumn(
+//                modifier,
+                pagerFlow = state.articles,
+                onArticleClick = { article ->
+                    intent(FeedIntent.RedirectArticle(article.slug))
+                },
+                addFavorite = { _ -> {} }
+            )
         }
     }
+
 }
 
 @Composable

@@ -1,5 +1,6 @@
 package com.walkmansit.realworld.data.repository
 
+import android.util.Log
 import com.walkmansit.realworld.data.api.ApiService
 import com.walkmansit.realworld.data.model.response.NewArticleFailedResponse
 import com.walkmansit.realworld.data.model.response.toDomain
@@ -76,6 +77,7 @@ class ArticleRepositoryImpl @Inject constructor(
 
     override suspend fun createArticle(newArticle: NewArticle): Either<NewArticleFailed, Article> =
         try {
+            Log.d("ArticleRepositoryImpl", "createArticle: $newArticle.toNetworkRequest()")
             val response = apiService.createArticle(newArticle.toNetworkRequest())
             Either.success(response.toDomain())
         } catch (e: IOException) {

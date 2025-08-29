@@ -1,5 +1,6 @@
 package com.walkmansit.realworld.presenter.splash
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkmansit.realworld.domain.usecases.CheckAuthUseCase
@@ -53,6 +54,7 @@ constructor(
                 }
 
                 is Either.Success -> {
+                    Log.d("SplashScreenViewModel", "User authenticated: ${authResult.value.token}")
                     _uiState.update {
                         it.copy(navEvent = SplashNavigationEvent.RedirectFeed(authResult.value.username))
                     }
