@@ -1,5 +1,6 @@
 package com.walkmansit.realworld.data.di
 
+import com.walkmansit.realworld.data.BuildConfig
 import com.walkmansit.realworld.data.api.ApiService
 import com.walkmansit.realworld.data.util.AuthInterceptor
 import com.walkmansit.realworld.domain.repository.TokenRepository
@@ -40,7 +41,7 @@ object NetworkModule {
         Retrofit
             .Builder()
             .client(okHttpClient)
-            .baseUrl("http://10.8.1.4:8080/api/v1/")
+            .baseUrl(BuildConfig.API_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
