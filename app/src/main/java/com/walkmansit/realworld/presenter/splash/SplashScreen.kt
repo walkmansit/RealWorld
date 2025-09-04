@@ -23,7 +23,6 @@ fun SplashScreen(
     viewModel: SplashScreenViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-//    val uiState = viewModel.uiState.collectAsState()
 
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
@@ -42,8 +41,6 @@ fun SplashScreen(
                     navigateFeed(event.navEvent.username)
                     viewModel.consumeNavEvent()
                 }
-
-                is SplashNavigationEvent.Undefined -> {}
             }
         }
     }

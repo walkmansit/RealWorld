@@ -33,7 +33,7 @@ fun TagsComponent(
 ) {
     FlowRow(
         maxLines = 2,
-        horizontalArrangement = Arrangement.Start, // Arrangement.spacedBy(2.dp)
+        horizontalArrangement = Arrangement.Start,
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier =
             Modifier
@@ -56,7 +56,7 @@ fun TagsComponentSimple(
 ) {
     FlowRow(
         maxLines = 2,
-        horizontalArrangement = Arrangement.Start, // Arrangement.spacedBy(2.dp)
+        horizontalArrangement = Arrangement.Start,
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier =
             Modifier

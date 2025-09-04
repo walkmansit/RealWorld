@@ -12,7 +12,6 @@ import com.walkmansit.realworld.domain.util.Either
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import java.io.IOException
 import javax.inject.Inject
 
 class UserPreferencesRepositoryImpl @Inject constructor(
@@ -23,11 +22,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
             dataStore.data
                 .catch { exception ->
                     // dataStore.data throws an IOException when an error is encountered when reading data
-                    if (exception is IOException) {
-                        emit(emptyPreferences())
-                    } else {
-                        emit(emptyPreferences())
-                    }
+                    emit(emptyPreferences())
                 }.map { preferences ->
                     mapUserAuth(preferences)
                     // Get our show completed value, defaulting to false if not set:

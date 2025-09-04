@@ -1,6 +1,5 @@
 package com.walkmansit.realworld.presenter.feed
 
-import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,22 +13,14 @@ import com.walkmansit.realworld.domain.model.ArticlesFilter
 import com.walkmansit.realworld.domain.usecases.GetArticlesUseCase
 import com.walkmansit.realworld.domain.usecases.LogoutUseCase
 import com.walkmansit.realworld.presenter.feed.ArticlePagingSource.Companion.FEED_PAGE_SIZE
-import com.walkmansit.realworld.presenter.registration.RegistrationState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.Container
@@ -37,10 +28,8 @@ import pro.respawn.flowmvi.api.MVIAction
 import pro.respawn.flowmvi.api.MVIIntent
 import pro.respawn.flowmvi.api.MVIState
 import pro.respawn.flowmvi.api.PipelineContext
-import pro.respawn.flowmvi.dsl.action
 import pro.respawn.flowmvi.dsl.store
 import pro.respawn.flowmvi.dsl.updateStateOrThrow
-import pro.respawn.flowmvi.dsl.withState
 import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 import javax.inject.Inject
@@ -82,21 +71,14 @@ sealed interface FeedState : FeedBaseState {
         override val filter: ArticleFilterType = ArticleFilterType.Feed,
         override val articles: Flow<PagingData<Article>> = flowOf()
     ) : FeedState
-//        (
-//        val selectedFilter: ArticleFilterType = ArticleFilterType.Feed,
-//        val articles: Flow<PagingData<Article>> = flowOf()
-//    )
 
     data class LoadingOnSubmit(
         override val filter: ArticleFilterType = ArticleFilterType.Feed,
         override val articles: Flow<PagingData<Article>> = flowOf()
-//        val selectedFilter: ArticleFilterType = ArticleFilterType.Feed,
-//        val articles: Flow<PagingData<Article>> = flowOf()
     ) : FeedState
 }
 
 sealed class FeedAction : MVIAction {
-//    data object Undefined : FeedAction()
 
     data class RedirectArticle(
         val slug: String,

@@ -6,20 +6,21 @@ import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.model.UserRegisterCredentials
 import com.walkmansit.realworld.domain.repository.AuthRepository
 import com.walkmansit.realworld.domain.repository.UserPreferencesRepository
+import com.walkmansit.realworld.domain.util.DispatcherProvider
 import com.walkmansit.realworld.domain.util.Either
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class RegistrationUseCase(
     private val repository: AuthRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
+    private val dispatcherProvider: DispatcherProvider,
 ) {
     suspend operator fun invoke(
         username: String,
         email: String,
         password: String,
     ): Either<Either<CommonError, RegistrationFailed>, User> =
-        withContext(Dispatchers.IO) {
+        withContext(dispatcherProvider.io) {
             val usernameError = if (username.isBlank()) "Username cannot be blank" else null
             val emailError = if (email.isBlank()) "Email cannot be blank" else null
             val passwordError = if (password.isBlank()) "Password cannot be blank" else null

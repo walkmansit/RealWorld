@@ -31,9 +31,6 @@ fun NavGraph(
             NavigationActions(navController)
         },
 ) {
-//    val currentNavBackStackEntry by navController.currentBackStackEntryAsState()
-//    val currentRoute = currentNavBackStackEntry?.destination?.route ?: startDestination
-
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -50,7 +47,6 @@ fun NavGraph(
 
         composable(route = RwDestinations.REGISTRATION_ROUTE) {
             RegistrationView(
-                modifier,
                 navigateLogin = navActions::navigateToLogin,
                 navigateFeed = navActions::navigateToFeed,
                 toast = navActions::toast,
@@ -59,7 +55,6 @@ fun NavGraph(
 
         composable(route = RwDestinations.LOGIN_ROUTE) {
             LoginView(
-                modifier,
                 navigateRegistration = navActions::navigateToRegistration,
                 navigateFeed = navActions::navigateToFeed,
                 toast = navActions::toast,

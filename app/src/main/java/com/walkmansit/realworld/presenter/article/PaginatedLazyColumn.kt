@@ -137,31 +137,6 @@ fun PaginatedLazyColumn(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-//            Text(text = item.slug, modifier = Modifier.padding(8.dp))  // Add padding to each item
         }
-
-//         Render each item in the list using a unique key
-//        itemsIndexed(lazyPagingItems, key = { it, item -> item }) { index, item ->
-//            Text(text = item, modifier = Modifier.padding(8.dp))  // Add padding to each item
-//        }
-
-//            // Check if we've reached the end of the list
-//            if (index == items.lastIndex && !isLoading) {
-//                loadMoreItems()
-//            }
-
-        // Show a loading indicator at the bottom when items are being loaded
-//        if (isLoading) {
-//            item {
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(16.dp),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    CircularProgressIndicator()  // Display a circular loading indicator
-//                }
-//            }
-//        }
     }
 }

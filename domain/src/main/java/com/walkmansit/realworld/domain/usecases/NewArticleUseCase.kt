@@ -4,12 +4,13 @@ import com.walkmansit.realworld.domain.model.Article
 import com.walkmansit.realworld.domain.model.NewArticle
 import com.walkmansit.realworld.domain.model.NewArticleFailed
 import com.walkmansit.realworld.domain.repository.ArticleRepository
+import com.walkmansit.realworld.domain.util.DispatcherProvider
 import com.walkmansit.realworld.domain.util.Either
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class NewArticleUseCase(
     private val repository: ArticleRepository,
+    private val dispatcherProvider: DispatcherProvider,
 ) {
     suspend operator fun invoke(
         title: String,
@@ -21,7 +22,7 @@ class NewArticleUseCase(
         val descriptionError = if (description.isBlank()) "Description cannot be blank" else null
         val bodyError = if (body.isBlank()) "Body cannot be blank" else null
 
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatcherProvider.io) {
             if (titleError == null && descriptionError == null && bodyError == null) {
                 repository.createArticle(NewArticle(title, description, body, tags))
             } else {

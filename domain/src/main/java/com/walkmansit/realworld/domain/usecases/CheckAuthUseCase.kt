@@ -5,6 +5,7 @@ import com.walkmansit.realworld.domain.model.RequestFailed
 import com.walkmansit.realworld.domain.model.User
 import com.walkmansit.realworld.domain.repository.AuthRepository
 import com.walkmansit.realworld.domain.repository.UserPreferencesRepository
+import com.walkmansit.realworld.domain.util.DispatcherProvider
 import com.walkmansit.realworld.domain.util.Either
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -13,15 +14,16 @@ import kotlinx.coroutines.withContext
 class CheckAuthUseCase(
     private val authRepository: AuthRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
+    private val dispatcherProvider: DispatcherProvider,
 ) {
     suspend operator fun invoke(): Either<Either<EmptyUser, RequestFailed>, User> {
-        when (val savedUser = userPreferencesRepository.userFlow.first()) {
+        return  when (val savedUser = userPreferencesRepository.userFlow.first()) {
             is Either.Fail -> {
-                return Either.fail(savedUser)
+                 Either.fail(savedUser)
             }
 
             is Either.Success -> {
-                return withContext(Dispatchers.IO) {
+                 withContext(dispatcherProvider.io) {
                     val profileResp = authRepository.getProfile(savedUser.value.username)
 
                     when (profileResp) {

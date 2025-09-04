@@ -41,7 +41,6 @@ import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
 fun LoginView(
-    modifier: Modifier = Modifier,
     navController: NavController = rememberNavController(),
     navigateRegistration: () -> Unit,
     navigateFeed: (String) -> Unit,

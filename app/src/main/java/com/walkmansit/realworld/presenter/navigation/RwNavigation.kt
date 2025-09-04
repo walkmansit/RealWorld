@@ -19,14 +19,10 @@ object RwDestinations {
     const val FEED_ROUTE = "$FEED$USERNAME_ARG={$USERNAME_ARG}"
     const val NEW_ARTICLE_ROUTE = NEW_ARTICLE
     const val ARTICLE_ROUTE = "$ARTICLE/{$SLUG_ARG}?$CAN_EDIT_ARG={$CAN_EDIT_ARG}"
-//    const val STATISTICS_ROUTE = STATISTICS_SCREEN
-//    const val TASK_DETAIL_ROUTE = "$TASK_DETAIL_SCREEN/{$TASK_ID_ARG}"
-// const val ADD_EDIT_TASK_ROUTE = "$ADD_EDIT_TASK_SCREEN/{$TITLE_ARG}?$TASK_ID_ARG={$TASK_ID_ARG}"
 }
 
 object FeedDestinationsArgs {
     const val USERNAME_ARG = "username"
-//    const val TOKEN_ARG = "token"
 }
 
 private object RwScreens {

@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,16 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.walkmansit.realworld.domain.model.ArticleFilterType
 import com.walkmansit.realworld.presenter.article.PaginatedLazyColumn
 import com.walkmansit.realworld.presenter.components.CircularProgress
 import com.walkmansit.realworld.presenter.feed.MAP.filterMapping
-import com.walkmansit.realworld.presenter.registration.RegistrationAction
-import com.walkmansit.realworld.presenter.registration.RegistrationIntent
-import com.walkmansit.realworld.presenter.registration.RegistrationState
-import com.walkmansit.realworld.presenter.registration.RegistrationViewContent
-import kotlinx.coroutines.flow.collectLatest
 import pro.respawn.flowmvi.api.IntentReceiver
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
