@@ -30,46 +30,50 @@ object UseCaseModule {
     @Provides
     fun provideEditArticleUseCase(
         repository: ArticleRepository,
-        dispatcherProvider: DefaultDispatcherProvider) = EditArticleUseCase(repository,dispatcherProvider)
+        dispatcherProvider: DefaultDispatcherProvider,
+    ) = EditArticleUseCase(repository, dispatcherProvider)
 
     @Provides
     fun provideGetArticlesUseCase(
         articleRepository: ArticleRepository,
-        dispatcherProvider: DefaultDispatcherProvider) = GetArticlesUseCase(articleRepository,dispatcherProvider)
+        dispatcherProvider: DefaultDispatcherProvider,
+    ) = GetArticlesUseCase(articleRepository, dispatcherProvider)
 
     @Provides
     fun provideGetArticleUseCase(
         articleRepository: ArticleRepository,
-        dispatcherProvider: DefaultDispatcherProvider) = GetArticleUseCase(articleRepository, dispatcherProvider)
+        dispatcherProvider: DefaultDispatcherProvider,
+    ) = GetArticleUseCase(articleRepository, dispatcherProvider)
 
     @Provides
     fun provideGetTagsUseCase(
         articleRepository: ArticleRepository,
-        dispatcherProvider: DefaultDispatcherProvider) = GetTagsUseCase(articleRepository, dispatcherProvider)
+        dispatcherProvider: DefaultDispatcherProvider,
+    ) = GetTagsUseCase(articleRepository, dispatcherProvider)
 
     @Provides
     fun provideLoginUseCase(
         authRepository: AuthRepository,
         userPreferencesRepository: UserPreferencesRepository,
-        dispatcherProvider: DefaultDispatcherProvider
+        dispatcherProvider: DefaultDispatcherProvider,
     ) = LoginUseCase(authRepository, userPreferencesRepository, dispatcherProvider)
 
     @Provides
     fun provideLogoutUseCase(
         userPreferencesRepository: UserPreferencesRepository,
-        dispatcherProvider: DefaultDispatcherProvider) =
-        LogoutUseCase(userPreferencesRepository, dispatcherProvider)
+        dispatcherProvider: DefaultDispatcherProvider,
+    ) = LogoutUseCase(userPreferencesRepository, dispatcherProvider)
 
     @Provides
     fun provideNewArticleUseCase(
         repository: ArticleRepository,
-        dispatcherProvider: DefaultDispatcherProvider
+        dispatcherProvider: DefaultDispatcherProvider,
     ): NewArticleUseCase = NewArticleUseCase(repository, dispatcherProvider)
 
     @Provides
     fun provideRegistrationUseCase(
         repository: AuthRepository,
         userPreferencesRepository: UserPreferencesRepository,
-        dispatcherProvider: DefaultDispatcherProvider
+        dispatcherProvider: DefaultDispatcherProvider,
     ) = RegistrationUseCase(repository, userPreferencesRepository, dispatcherProvider)
 }

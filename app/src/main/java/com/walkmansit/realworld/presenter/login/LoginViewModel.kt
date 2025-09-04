@@ -77,104 +77,104 @@ private typealias Ctx = PipelineContext<LoginState, LoginIntent, LoginAction>
 
 @HiltViewModel
 class LoginViewModel
-@Inject
-constructor(
-    private val loginUseCase: LoginUseCase,
-) : ViewModel(),
-    Container<LoginState, LoginIntent, LoginAction> {
-    override val store =
-        store(initial = LoginState.Content(), scope = viewModelScope) {
+    @Inject
+    constructor(
+        private val loginUseCase: LoginUseCase,
+    ) : ViewModel(),
+        Container<LoginState, LoginIntent, LoginAction> {
+        override val store =
+            store(initial = LoginState.Content(), scope = viewModelScope) {
 
-            configure {
-                name = "LoginStore"
-                debuggable = true
-                actionShareBehavior = ActionShareBehavior.Distribute()
-                parallelIntents = true
-            }
-
-            recover { e: Exception ->
-                updateState {
-                    LoginState.Error(e.message ?: "Unknown error")
+                configure {
+                    name = "LoginStore"
+                    debuggable = true
+                    actionShareBehavior = ActionShareBehavior.Distribute()
+                    parallelIntents = true
                 }
-                null
-            }
 
-            reduce { intent ->
-                when (intent) {
-                    is LoginIntent.UpdateEmail -> updateEmail(intent.email)
-                    is LoginIntent.UpdatePassword -> updatePassword(intent.password)
-                    is LoginIntent.RedirectRegistration -> action(LoginAction.RedirectRegistration)
-                    is LoginIntent.SubmitStart -> submitStart()
-                    is LoginIntent.SubmitComplete -> submitComplete(intent.result)
+                recover { e: Exception ->
+                    updateState {
+                        LoginState.Error(e.message ?: "Unknown error")
+                    }
+                    null
+                }
+
+                reduce { intent ->
+                    when (intent) {
+                        is LoginIntent.UpdateEmail -> updateEmail(intent.email)
+                        is LoginIntent.UpdatePassword -> updatePassword(intent.password)
+                        is LoginIntent.RedirectRegistration -> action(LoginAction.RedirectRegistration)
+                        is LoginIntent.SubmitStart -> submitStart()
+                        is LoginIntent.SubmitComplete -> submitComplete(intent.result)
+                    }
                 }
             }
+
+        private suspend fun Ctx.updateEmail(newEmail: String) {
+            updateStateOrThrow<LoginState.Content, _> {
+                copy(
+                    fields =
+                        with(fields) {
+                            copy(email = email.copy(text = newEmail))
+                        },
+                )
+            }
         }
 
-    private suspend fun Ctx.updateEmail(newEmail: String) {
-        updateStateOrThrow<LoginState.Content, _> {
-            copy(
-                fields =
-                    with(fields) {
-                        copy(email = email.copy(text = newEmail))
-                    },
-            )
+        private suspend fun Ctx.updatePassword(newPassword: String) {
+            updateStateOrThrow<LoginState.Content, _> {
+                copy(
+                    fields =
+                        with(fields) {
+                            copy(password = password.copy(text = newPassword))
+                        },
+                )
+            }
         }
-    }
 
-    private suspend fun Ctx.updatePassword(newPassword: String) {
-        updateStateOrThrow<LoginState.Content, _> {
-            copy(
-                fields =
-                    with(fields) {
-                        copy(password = password.copy(text = newPassword))
-                    },
-            )
-        }
-    }
+        private suspend fun Ctx.submitComplete(result: Either<Either<CommonError, LoginFailed>, User>) {
+            updateStateOrThrow<LoginState.LoadingOnSubmit, _> {
+                when (result) {
+                    is Either.Fail -> {
+                        val fail = result.value
+                        when (fail) {
+                            is Either.Fail -> {
+                                action(LoginAction.ShowMessage(fail.value.error))
+                                LoginState.Content(fields)
+                            }
 
-    private suspend fun Ctx.submitComplete(result: Either<Either<CommonError, LoginFailed>, User>) {
-        updateStateOrThrow<LoginState.LoadingOnSubmit, _> {
-            when (result) {
-                is Either.Fail -> {
-                    val fail = result.value
-                    when (fail) {
-                        is Either.Fail -> {
-                            action(LoginAction.ShowMessage(fail.value.error))
-                            LoginState.Content(fields)
-                        }
-
-                        is Either.Success -> {
-                            with(fields) {
-                                val newFields =
-                                    copy(
-                                        email = email.copy(error = fail.value.emailError),
-                                        password = password.copy(error = fail.value.passwordError),
-                                    )
-                                LoginState.Content(newFields)
+                            is Either.Success -> {
+                                with(fields) {
+                                    val newFields =
+                                        copy(
+                                            email = email.copy(error = fail.value.emailError),
+                                            password = password.copy(error = fail.value.passwordError),
+                                        )
+                                    LoginState.Content(newFields)
+                                }
                             }
                         }
                     }
-                }
 
-                is Either.Success -> {
-                    action(LoginAction.RedirectFeed(result.value.username))
-                    LoginState.Content()
+                    is Either.Success -> {
+                        action(LoginAction.RedirectFeed(result.value.username))
+                        LoginState.Content()
+                    }
                 }
             }
         }
-    }
 
-    private suspend fun Ctx.submitStart() {
-        updateStateOrThrow<LoginState.Content, _> {
-            viewModelScope.launch {
-                val loginResult =
-                    loginUseCase(
-                        email = fields.email.text,
-                        password = fields.password.text,
-                    )
-                intent(LoginIntent.SubmitComplete(loginResult))
+        private suspend fun Ctx.submitStart() {
+            updateStateOrThrow<LoginState.Content, _> {
+                viewModelScope.launch {
+                    val loginResult =
+                        loginUseCase(
+                            email = fields.email.text,
+                            password = fields.password.text,
+                        )
+                    intent(LoginIntent.SubmitComplete(loginResult))
+                }
+                LoginState.LoadingOnSubmit()
             }
-            LoginState.LoadingOnSubmit()
         }
     }
-}

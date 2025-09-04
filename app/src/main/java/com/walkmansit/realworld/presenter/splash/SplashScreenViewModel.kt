@@ -31,39 +31,39 @@ sealed class SplashNavigationEvent {
 
 @HiltViewModel
 class SplashScreenViewModel
-@Inject
-constructor(
-    private val checkAuthUseCase: CheckAuthUseCase,
-) : ViewModel() {
-    private val _uiState = MutableStateFlow(SplashUiState())
-    val uiState = _uiState.asStateFlow()
+    @Inject
+    constructor(
+        private val checkAuthUseCase: CheckAuthUseCase,
+    ) : ViewModel() {
+        private val _uiState = MutableStateFlow(SplashUiState())
+        val uiState = _uiState.asStateFlow()
 
-    init {
-        viewModelScope.launch {
-            when (val authResult = checkAuthUseCase()) {
-                is Either.Fail -> {
-                    when (authResult.value) {
-                        is Either.Fail -> {
-                            _uiState.update { it.copy(navEvent = SplashNavigationEvent.RedirectRegistration) }
-                        }
+        init {
+            viewModelScope.launch {
+                when (val authResult = checkAuthUseCase()) {
+                    is Either.Fail -> {
+                        when (authResult.value) {
+                            is Either.Fail -> {
+                                _uiState.update { it.copy(navEvent = SplashNavigationEvent.RedirectRegistration) }
+                            }
 
-                        is Either.Success -> {
-                            _uiState.update { it.copy(navEvent = SplashNavigationEvent.RedirectLogin) }
+                            is Either.Success -> {
+                                _uiState.update { it.copy(navEvent = SplashNavigationEvent.RedirectLogin) }
+                            }
                         }
                     }
-                }
 
-                is Either.Success -> {
-                    Log.d("SplashScreenViewModel", "User authenticated: ${authResult.value.token}")
-                    _uiState.update {
-                        it.copy(navEvent = SplashNavigationEvent.RedirectFeed(authResult.value.username))
+                    is Either.Success -> {
+                        Log.d("SplashScreenViewModel", "User authenticated: ${authResult.value.token}")
+                        _uiState.update {
+                            it.copy(navEvent = SplashNavigationEvent.RedirectFeed(authResult.value.username))
+                        }
                     }
                 }
             }
         }
-    }
 
-    fun consumeNavEvent() {
-        _uiState.update { it.copy(navEvent = SplashNavigationEvent.Undefined) }
+        fun consumeNavEvent() {
+            _uiState.update { it.copy(navEvent = SplashNavigationEvent.Undefined) }
+        }
     }
-}

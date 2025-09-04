@@ -49,11 +49,10 @@ sealed interface FeedIntent : MVIIntent {
     data object LogOut : FeedIntent
 }
 
-interface  FeedBaseState : MVIState {
+interface FeedBaseState : MVIState {
     val filter: ArticleFilterType
     val articles: Flow<PagingData<Article>>
 }
-
 
 sealed interface FeedState : FeedBaseState {
     data object Loading : FeedState {
@@ -69,17 +68,16 @@ sealed interface FeedState : FeedBaseState {
 
     data class Content(
         override val filter: ArticleFilterType = ArticleFilterType.Feed,
-        override val articles: Flow<PagingData<Article>> = flowOf()
+        override val articles: Flow<PagingData<Article>> = flowOf(),
     ) : FeedState
 
     data class LoadingOnSubmit(
         override val filter: ArticleFilterType = ArticleFilterType.Feed,
-        override val articles: Flow<PagingData<Article>> = flowOf()
+        override val articles: Flow<PagingData<Article>> = flowOf(),
     ) : FeedState
 }
 
 sealed class FeedAction : MVIAction {
-
     data class RedirectArticle(
         val slug: String,
     ) : FeedAction()
@@ -91,68 +89,69 @@ sealed class FeedAction : MVIAction {
 
 private typealias Ctx = PipelineContext<FeedState, FeedIntent, FeedAction>
 
-
 @HiltViewModel
 class FeedViewModel
-@Inject
-constructor(
-    private val getArticlesUseCase: GetArticlesUseCase,
-    private val logoutUseCase: LogoutUseCase,
-    savedStateHandle: SavedStateHandle,
-) : ViewModel(), Container<FeedState, FeedIntent, FeedAction> {
-    //private val username: String = savedStateHandle[FeedDestinationsArgs.USERNAME_ARG]!!
+    @Inject
+    constructor(
+        private val getArticlesUseCase: GetArticlesUseCase,
+        private val logoutUseCase: LogoutUseCase,
+        savedStateHandle: SavedStateHandle,
+    ) : ViewModel(),
+        Container<FeedState, FeedIntent, FeedAction> {
+        // private val username: String = savedStateHandle[FeedDestinationsArgs.USERNAME_ARG]!!
 
-    private val filterFlow = MutableStateFlow(ArticlesFilter(filterType = ArticleFilterType.Feed))
+        private val filterFlow = MutableStateFlow(ArticlesFilter(filterType = ArticleFilterType.Feed))
 
-    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    private val articles = filterFlow.debounce(300.milliseconds).flatMapLatest { filter ->
-        Pager(
-            PagingConfig(
-                pageSize = FEED_PAGE_SIZE,
-                enablePlaceholders = false,
-            ),
-        ) {
-            ArticlePagingSource(
-                getArticlesUseCase,
-                filter,
-                viewModelScope,
-            )
-        }.flow.cachedIn(viewModelScope)
-    }
-
-    override val store =
-        store(
-            initial = FeedState.Content(articles = articles),
-            scope = viewModelScope
-        ) {
-
-            configure {
-                name = "FeedStore"
-                debuggable = true
-                actionShareBehavior = ActionShareBehavior.Distribute()
-                parallelIntents = true
+        @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+        private val articles =
+            filterFlow.debounce(300.milliseconds).flatMapLatest { filter ->
+                Pager(
+                    PagingConfig(
+                        pageSize = FEED_PAGE_SIZE,
+                        enablePlaceholders = false,
+                    ),
+                ) {
+                    ArticlePagingSource(
+                        getArticlesUseCase,
+                        filter,
+                        viewModelScope,
+                    )
+                }.flow.cachedIn(viewModelScope)
             }
 
-            recover { e: Exception ->
-                updateState {
-                    FeedState.Error(
+        override val store =
+            store(
+                initial = FeedState.Content(articles = articles),
+                scope = viewModelScope,
+            ) {
+
+                configure {
+                    name = "FeedStore"
+                    debuggable = true
+                    actionShareBehavior = ActionShareBehavior.Distribute()
+                    parallelIntents = true
+                }
+
+                recover { e: Exception ->
+                    updateState {
+                        FeedState.Error(
                             message = e.message ?: "Unknown error",
                             filter = ArticleFilterType.Feed,
-                            articles = flowOf()
+                            articles = flowOf(),
                         )
+                    }
+                    null
                 }
-                null
-            }
 
-            reduce { intent ->
-                when (intent) {
-                    is FeedIntent.ChangeFilter -> changeFilter(intent.filter)
-                    is FeedIntent.RedirectNewArticle -> action(FeedAction.RedirectNewArticle)
-                    is FeedIntent.RedirectArticle -> action(FeedAction.RedirectArticle(intent.slug))
-                    is FeedIntent.LogOut -> action(FeedAction.RedirectLogin)
+                reduce { intent ->
+                    when (intent) {
+                        is FeedIntent.ChangeFilter -> changeFilter(intent.filter)
+                        is FeedIntent.RedirectNewArticle -> action(FeedAction.RedirectNewArticle)
+                        is FeedIntent.RedirectArticle -> action(FeedAction.RedirectArticle(intent.slug))
+                        is FeedIntent.LogOut -> action(FeedAction.RedirectLogin)
+                    }
                 }
             }
-        }
 
 //    private val _uiState = MutableStateFlow(FeedUiState())
 //    val uiState = _uiState.asStateFlow()
@@ -184,35 +183,30 @@ constructor(
 //            }.flow.cachedIn(viewModelScope)
 //        }
 
-
-
-
-
-
-    private suspend fun Ctx.changeFilter(filter: ArticleFilterType) {
-        updateStateOrThrow<FeedState.Content, _> {
-            FeedState.LoadingOnSubmit(filter, articles)
+        private suspend fun Ctx.changeFilter(filter: ArticleFilterType) {
+            updateStateOrThrow<FeedState.Content, _> {
+                FeedState.LoadingOnSubmit(filter, articles)
 //            copy(
 //                fi
 //                filter = filter
 //            )
 //            intent()
-        }
+            }
 //        withState<FeedState.Content, _> {
 //            action(FeedAction)
 //        }
-    }
+        }
 
-    private fun Ctx.redirectComplete() {
-        //_uiState.update { it.copy(navEvent = FeedAction.Undefined) }
-    }
+        private fun Ctx.redirectComplete() {
+            // _uiState.update { it.copy(navEvent = FeedAction.Undefined) }
+        }
 
-    private fun Ctx.logout() {
-        viewModelScope.launch {
-            val result = logoutUseCase.invoke()
-            if (result) {
+        private fun Ctx.logout() {
+            viewModelScope.launch {
+                val result = logoutUseCase.invoke()
+                if (result) {
 //                _uiState.update { it.copy(navEvent = FeedAction.RedirectLogin) }
+                }
             }
         }
     }
-}

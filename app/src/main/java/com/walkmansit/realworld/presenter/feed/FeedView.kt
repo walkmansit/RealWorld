@@ -50,7 +50,7 @@ fun FeedView(
     navigateLogin: () -> Unit,
     viewModel: FeedViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
-) =  with(viewModel.store) {
+) = with(viewModel.store) {
     Log.d("FeedView", "FeedView recomposition")
 
     val state by subscribe { action ->
@@ -60,7 +60,6 @@ fun FeedView(
             is FeedAction.RedirectNewArticle -> navigateNewArticle()
         }
     }
-
 
 //    LaunchedEffect(key1 = true) {
 //        viewModel.uiState.collectLatest { event ->
@@ -133,20 +132,24 @@ fun FeedView(
     }
 }
 
-
-
 @Composable
-fun IntentReceiver<FeedIntent>.FeedViewContainer(padding : PaddingValues, state: FeedState) {
+fun IntentReceiver<FeedIntent>.FeedViewContainer(
+    padding: PaddingValues,
+    state: FeedState,
+) {
     when (state) {
         is FeedState.Loading -> CircularProgress()
         is FeedState.LoadingOnSubmit -> CircularProgress()
         is FeedState.Error -> Text(text = state.message)
-        is FeedState.Content -> FeedViewContent(padding , state)
+        is FeedState.Content -> FeedViewContent(padding, state)
     }
 }
 
 @Composable
-fun IntentReceiver<FeedIntent>.FeedViewContent(padding : PaddingValues, state: FeedState.Content) {
+fun IntentReceiver<FeedIntent>.FeedViewContent(
+    padding: PaddingValues,
+    state: FeedState.Content,
+) {
     Box(modifier = Modifier.padding(padding)) {
         Column {
             PaginatedLazyColumn(
@@ -155,11 +158,10 @@ fun IntentReceiver<FeedIntent>.FeedViewContent(padding : PaddingValues, state: F
                 onArticleClick = { article ->
                     intent(FeedIntent.RedirectArticle(article.slug))
                 },
-                addFavorite = { _ -> {} }
+                addFavorite = { _ -> {} },
             )
         }
     }
-
 }
 
 @Composable

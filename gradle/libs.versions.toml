@@ -14,6 +14,7 @@ junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 kotlinxCollectionsImmutable = "0.4.0"
+ktlintVersion = "0.4.26"
 leakcanaryAndroid = "2.14"
 lifecycleRuntimeKtx = "2.9.2"
 activityCompose = "1.10.1"
@@ -90,6 +91,7 @@ flowmvi-essenty = { module = "pro.respawn.flowmvi:essenty", version.ref = "flowm
 flowmvi-essenty-compose = { module = "pro.respawn.flowmvi:essenty-compose", version.ref = "flowmvi" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+rules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version.ref = "ktlintVersion" }
 
 
 [plugins]

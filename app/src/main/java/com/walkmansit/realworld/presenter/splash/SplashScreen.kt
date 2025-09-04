@@ -1,6 +1,7 @@
 package com.walkmansit.realworld.presenter.splash
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -23,7 +24,6 @@ fun SplashScreen(
     viewModel: SplashScreenViewModel = hiltViewModel(),
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-
     LaunchedEffect(key1 = true) {
         viewModel.uiState.collectLatest { event ->
             when (event.navEvent) {
@@ -40,6 +40,9 @@ fun SplashScreen(
                 is SplashNavigationEvent.RedirectFeed -> {
                     navigateFeed(event.navEvent.username)
                     viewModel.consumeNavEvent()
+                }
+                else -> {
+                    Log.d("SplashScreen", "Unhandled navigation event: ${event.navEvent}")
                 }
             }
         }

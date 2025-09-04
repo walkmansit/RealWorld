@@ -6,13 +6,13 @@ indent_size = 4
 indent_style = space
 max_line_length = 120
 ij_kotlin_imports_layout = *, java.**, javax.**, kotlin.**, ^
+ktlint_function_naming_ignore_when_annotated_with = Composable
 
 # Проверка имён функций (camelCase)
 # KtLint проверяет только обычные функции
 # Composable-функции лучше подавлять локально через @Suppress("FunctionName")
 
 # Если нужно отключить правило глобально:
-# ktlint_function_naming = disabled
 
 # Другие полезные правила
 ktlint_no_wildcard_imports = enabled

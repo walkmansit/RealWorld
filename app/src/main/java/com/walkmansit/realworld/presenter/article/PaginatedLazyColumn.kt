@@ -136,7 +136,6 @@ fun PaginatedLazyColumn(
             if (index < lazyPagingItems.itemCount) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
-
         }
     }
 }

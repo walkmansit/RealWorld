@@ -10,22 +10,24 @@ class RealWorldApplication : Application() {
         super.onCreate()
     }
 
-    fun enableStrickMode(){
+    fun enableStrickMode() {
         if (BuildConfig.DEBUG) {
             StrictMode.setThreadPolicy(
-                StrictMode.ThreadPolicy.Builder()
+                StrictMode.ThreadPolicy
+                    .Builder()
                     .detectAll()
-                    .penaltyLog()       // Log violations to Logcat
-                    //.penaltyDialog()   // Show dialog on violations
-                    //.penaltyDeath()    // Crash the app on violation (for testing only!)
-                    .build()
+                    .penaltyLog() // Log violations to Logcat
+                    // .penaltyDialog()   // Show dialog on violations
+                    // .penaltyDeath()    // Crash the app on violation (for testing only!)
+                    .build(),
             )
 
             StrictMode.setVmPolicy(
-                StrictMode.VmPolicy.Builder()
+                StrictMode.VmPolicy
+                    .Builder()
                     .detectAll()
                     .penaltyLog()
-                    .build()
+                    .build(),
             )
         }
     }

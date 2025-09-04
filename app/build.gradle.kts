@@ -121,6 +121,8 @@ dependencies {
     implementation(libs.flowmvi.essenty)
     implementation(libs.flowmvi.essenty.compose)
 
+
+
     // Immutable collections
     implementation(libs.kotlinx.collections.immutable)
 
@@ -137,6 +139,8 @@ dependencies {
 
     // detect
     detektPlugins(libs.detekt.formatting)
+
+//    ktlintRuleset(libs.rules.ktlint)
 
     // Routing and args
 //    ksp(libs.processor.ksp)

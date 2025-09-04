@@ -43,61 +43,61 @@ sealed interface ArticleUiState {
 
 @HiltViewModel
 class ArticleViewModel
-@Inject
-constructor(
-    private val getArticleUseCase: GetArticleUseCase,
-    private val getTagsUseCase: GetTagsUseCase,
-    private val editArticleUseCase: EditArticleUseCase,
-    savedStateHandle: SavedStateHandle,
-) : ViewModel() {
-    private val tagsFlow = MutableStateFlow<List<String>?>(null)
-    private val articleFlow = MutableStateFlow<Article?>(null)
+    @Inject
+    constructor(
+        private val getArticleUseCase: GetArticleUseCase,
+        private val getTagsUseCase: GetTagsUseCase,
+        private val editArticleUseCase: EditArticleUseCase,
+        savedStateHandle: SavedStateHandle,
+    ) : ViewModel() {
+        private val tagsFlow = MutableStateFlow<List<String>?>(null)
+        private val articleFlow = MutableStateFlow<Article?>(null)
 
-    private val slug: String = savedStateHandle[SLUG_ARG]!!
-    private lateinit var originalArticle: Article
+        private val slug: String = savedStateHandle[SLUG_ARG]!!
+        private lateinit var originalArticle: Article
 
-    private val _uiState = MutableStateFlow<ArticleUiState>(ArticleUiState.IsLoading)
-    val uiState = _uiState.asStateFlow()
+        private val _uiState = MutableStateFlow<ArticleUiState>(ArticleUiState.IsLoading)
+        val uiState = _uiState.asStateFlow()
 
-    init {
-        fetchData()
-    }
+        init {
+            fetchData()
+        }
 
 //    private val _canEdit: Boolean = savedStateHandle[CAN_EDIT_ARG]!!
 
-    private fun fetchData() {
-        viewModelScope.launch {
-            _uiState.update { ArticleUiState.IsLoading }
+        private fun fetchData() {
+            viewModelScope.launch {
+                _uiState.update { ArticleUiState.IsLoading }
 
-            fetchArticle()
+                fetchArticle()
 
-            combine(tagsFlow.filterNotNull(), articleFlow.filterNotNull()) { tag, article ->
-                originalArticle = article
-                tag to article
-            }.collectLatest { pair ->
-                _uiState.update {
-                    ArticleUiState.ArticleUiData(
-                        title = TextFieldState(pair.second.title),
-                        description = TextFieldState(pair.second.description),
-                        body = TextFieldState(pair.second.body!!),
-                        selectedTags = pair.first,
-                    )
+                combine(tagsFlow.filterNotNull(), articleFlow.filterNotNull()) { tag, article ->
+                    originalArticle = article
+                    tag to article
+                }.collectLatest { pair ->
+                    _uiState.update {
+                        ArticleUiState.ArticleUiData(
+                            title = TextFieldState(pair.second.title),
+                            description = TextFieldState(pair.second.description),
+                            body = TextFieldState(pair.second.body!!),
+                            selectedTags = pair.first,
+                        )
+                    }
                 }
             }
         }
-    }
 
-    private suspend fun fetchArticle() {
-        when (val artRes = getArticleUseCase(slug)) {
-            is Either.Fail -> {
-                _uiState.update { ArticleUiState.HasError("Failed to load data") }
-            }
+        private suspend fun fetchArticle() {
+            when (val artRes = getArticleUseCase(slug)) {
+                is Either.Fail -> {
+                    _uiState.update { ArticleUiState.HasError("Failed to load data") }
+                }
 
-            is Either.Success -> {
-                articleFlow.value = artRes.value
+                is Either.Success -> {
+                    articleFlow.value = artRes.value
+                }
             }
         }
-    }
 
 //    private fun submitEditArticle() {
 //
@@ -139,4 +139,4 @@ constructor(
 //        }
 //        }
 //    }
-}
+    }
