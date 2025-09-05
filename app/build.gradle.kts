@@ -65,6 +65,17 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    // Configure APK output names
+    applicationVariants.all {
+        val variant = this
+        variant.outputs
+            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+            .forEach { output ->
+                val outputFileName = "app-${variant.name}-${variant.versionName}.apk"
+                output.outputFileName = outputFileName
+            }
+    }
 }
 
 detekt {
@@ -123,8 +134,6 @@ dependencies {
     implementation(libs.flowmvi.essenty)
     implementation(libs.flowmvi.essenty.compose)
 
-
-
     // Immutable collections
     implementation(libs.kotlinx.collections.immutable)
 
@@ -157,7 +166,29 @@ tasks.check {
     dependsOn(tasks.ktlintCheck)
 }
 
-// Allow references to generated code
-// kapt {
-//    correctErrorTypes = true
-// }
+// Task to clean build cache thoroughly
+tasks.register("superClean", Delete::class) {
+    delete(rootProject.layout.buildDirectory)
+    delete("${rootProject.rootDir}/.gradle/caches")
+    delete("${rootProject.rootDir}/.idea/caches")
+    doLast {
+        println("Super clean completed!")
+    }
+}
+
+// Task to check for dependency updates using proper exec
+tasks.register("dependencyUpdates") {
+    doLast {
+        val process = ProcessBuilder(
+            "${rootProject.projectDir}/gradlew",
+            "dependencyUpdates",
+            "-Drevision=release"
+        ).redirectOutput(ProcessBuilder.Redirect.PIPE)
+            .redirectError(ProcessBuilder.Redirect.PIPE)
+            .start()
+
+        process.waitFor()
+        val output = process.inputStream.bufferedReader().readText()
+        println("Dependency Updates:\n$output")
+    }
+}
