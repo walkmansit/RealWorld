@@ -58,6 +58,16 @@ fi
 TEMP_FILE_LIST=$(mktemp)
 echo "$STAGED_FILES" > "$TEMP_FILE_LIST"
 
+if [ -f "./gradlew" ] && ./gradlew tasks --all | grep -q "detekt"; then
+    echo "🔍 Running detekt check..."
+    if ./gradlew detekt --quiet; then
+        echo "✅ detekt passed"
+    else
+        echo "❌ detekt found issues! Check reports in build/reports/detekt/"
+        exit 1
+    fi
+fi
+
 # Run ktlint check on staged files
 echo "Running ktlint check on staged files..."
 if ./gradlew ktlintCheck -Pktlint.fileList="$TEMP_FILE_LIST" --quiet; then
@@ -84,5 +94,7 @@ else
     rm -f "$TEMP_FILE_LIST"
     exit 1
 fi
+
+
 
 exit 0
