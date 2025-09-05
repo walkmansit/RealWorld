@@ -33,8 +33,7 @@ jobs:
       - name: Build Debug APK
         env:
           API_URL: ${{ secrets.API_URL }}
-        run: ./gradlew assembleDebug \
-          -PAPI_URL=$API_URL \
+        run: ./gradlew assembleDebug -PAPI_URL=$API_URL
       - run: echo "Build Debug APK complete"
 
       - run: echo "Upload APK start"
