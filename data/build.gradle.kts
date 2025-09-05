@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.google.devtools.ksp)
 }
 
+
 android {
     namespace = "com.walkmansit.realworld.data"
     compileSdk = 36

@@ -179,13 +179,14 @@ tasks.register("superClean", Delete::class) {
 // Task to check for dependency updates using proper exec
 tasks.register("dependencyUpdates") {
     doLast {
-        val process = ProcessBuilder(
-            "${rootProject.projectDir}/gradlew",
-            "dependencyUpdates",
-            "-Drevision=release"
-        ).redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE)
-            .start()
+        val process =
+            ProcessBuilder(
+                "${rootProject.projectDir}/gradlew",
+                "dependencyUpdates",
+                "-Drevision=release",
+            ).redirectOutput(ProcessBuilder.Redirect.PIPE)
+                .redirectError(ProcessBuilder.Redirect.PIPE)
+                .start()
 
         process.waitFor()
         val output = process.inputStream.bufferedReader().readText()
