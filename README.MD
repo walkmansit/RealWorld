@@ -1,22 +1,32 @@
 // Detekt tips
-```shell
+```bash
   gradle check
 ```
 
-```shell
+```bash
   gradle detekt
 ```
 
-```shell
+```bash
   gradle detekt --auto-correct
 ```
 
 ### Klint
-```shell
+```bash
   ./gradlew ktlintFormat
 ```
 
-```shell
+```bash
   ./gradlew ktlintCheck
+```
+
+### Show local addresses
+```bash
+  ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}'
+```
+
+### Show local open ports v4≠≠
+```bash
+  lsof -Pn -i4 | grep LISTEN
 ```
 

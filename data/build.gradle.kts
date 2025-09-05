@@ -9,21 +9,27 @@ android {
     namespace = "com.walkmansit.realworld.data"
     compileSdk = 36
 
+    fun Project.propOrDefault(name: String, default: String): String =
+        if (hasProperty(name)) property(name) as String else default
+
     defaultConfig {
         minSdk = 29
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        val apiUrl = project.propOrDefault("api.url", "no_value")
+        buildConfigField("String", "API_URL", "\"$apiUrl\"")
     }
 
 
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
+//            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
         }
         release {
-            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
+//            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

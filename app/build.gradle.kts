@@ -27,15 +27,17 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+//        buildConfigField("String", "API_KEY", "\"default_key\"")
     }
 
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
+//            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
         }
         release {
-            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
+//            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

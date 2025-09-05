@@ -1,6 +1,6 @@
 [versions]
 detektFormatting = "1.23.8"
-agp = "8.12.1"
+agp = "8.12.2"
 constraintlayoutCompose = "1.1.1"
 converterGson = "3.0.0"
 datastorePreferences = "1.1.7"
