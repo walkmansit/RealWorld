@@ -40,4 +40,49 @@ if [ -n "$CHANGED_FILES" ]; then
 fi
 
 echo "ktlint formatting completed!"
+
+# ktlintCheck pre-commit hook - checks code style without formatting
+echo "Running ktlint check..."
+
+echo "Checking ${#STAGED_FILES[@]} Kotlin file(s) for code style violations..."
+
+# Check if ktlint is available
+if ! ./gradlew tasks --all | grep -q "ktlintCheck"; then
+    echo "❌ Error: ktlintCheck task not found."
+    echo "Please add ktlint to your Gradle project:"
+    echo "plugins { id(\"org.jlleitschuh.gradle.ktlint\") version \"11.6.1\" }"
+    exit 1
+fi
+
+# Create temporary file with staged files
+TEMP_FILE_LIST=$(mktemp)
+echo "$STAGED_FILES" > "$TEMP_FILE_LIST"
+
+# Run ktlint check on staged files
+echo "Running ktlint check on staged files..."
+if ./gradlew ktlintCheck -Pktlint.fileList="$TEMP_FILE_LIST" --quiet; then
+    echo "✓ All Kotlin files pass ktlint validation!"
+    rm -f "$TEMP_FILE_LIST"
+    exit 0
+else
+    echo "❌ ktlint check failed!"
+    echo ""
+    echo "Please fix the following code style issues:"
+    echo "==========================================="
+
+    # Show the actual errors by running without quiet flag
+    ./gradlew ktlintCheck -Pktlint.fileList="$TEMP_FILE_LIST" | grep -E "(ERROR|✖)" | head -10
+
+    echo ""
+    echo "You can:"
+    echo "1. Fix the issues manually, or"
+    echo "2. Run './gradlew ktlintFormat' to auto-format, then review changes"
+    echo "3. Add the fixed files to staging with 'git add <file>'"
+    echo ""
+    echo "Commit aborted due to code style violations."
+
+    rm -f "$TEMP_FILE_LIST"
+    exit 1
+fi
+
 exit 0
