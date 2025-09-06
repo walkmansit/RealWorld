@@ -306,3 +306,9 @@ tasks.register("allArtifactsSize") {
         },
     )
 }
+
+tasks.register("printVersionName") {
+    doLast {
+        println(android.defaultConfig.versionName)
+    }
+}

@@ -70,7 +70,7 @@ jobs:
           TAG_NAME: ${{ github.ref_name }}
           ELAPSED: ${{ env.ELAPSED }}
         run: |
-          APK_PATH=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          APK_PATH=$(ls app/build/outputs/apk/release/app-release-$VERSION_NAME.apk 2>/dev/null || ls app/build/outputs/apk/release/*.apk | head -n 1)
           if [ ! -f "$APK_PATH" ]; then
           echo "❌ Release APK not found!"
           exit 1
