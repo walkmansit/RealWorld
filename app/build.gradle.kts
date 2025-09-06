@@ -1,4 +1,5 @@
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import java.text.DecimalFormat
 
 plugins {
     alias(libs.plugins.android.application)
@@ -38,7 +39,8 @@ android {
         }
         release {
 //            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
-            isMinifyEnabled = true
+            isMinifyEnabled = true // must be true for R8 to run
+            isShrinkResources = true // optional
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -166,30 +168,141 @@ tasks.check {
     dependsOn(tasks.ktlintCheck)
 }
 
-// Task to clean build cache thoroughly
-tasks.register("superClean", Delete::class) {
-    delete(rootProject.layout.buildDirectory)
-    delete("${rootProject.rootDir}/.gradle/caches")
-    delete("${rootProject.rootDir}/.idea/caches")
-    doLast {
-        println("Super clean completed!")
+abstract class SuperCleanTask : DefaultTask() {
+    // Directories to clean
+    var dirsToDelete: List<File> = emptyList()
+
+    @TaskAction
+    fun clean() {
+        dirsToDelete.forEach { dir ->
+            if (dir.exists()) {
+                dir.deleteRecursively()
+                println("✅ Deleted: ${dir.absolutePath}")
+            } else {
+                println("⚠️ Directory not found: ${dir.absolutePath}")
+            }
+        }
+        println("🎉 Super clean completed!")
     }
 }
 
-// Task to check for dependency updates using proper exec
-tasks.register("dependencyUpdates") {
-    doLast {
-        val process =
-            ProcessBuilder(
-                "${rootProject.projectDir}/gradlew",
-                "dependencyUpdates",
-                "-Drevision=release",
-            ).redirectOutput(ProcessBuilder.Redirect.PIPE)
-                .redirectError(ProcessBuilder.Redirect.PIPE)
-                .start()
+// Task to clean build cache thoroughly
+tasks.register<SuperCleanTask>("superClean") {
+    group = "build"
+    description = "Cleans build artifacts, Gradle caches, and IDE caches"
 
-        process.waitFor()
-        val output = process.inputStream.bufferedReader().readText()
-        println("Dependency Updates:\n$output")
+    dirsToDelete =
+        listOf(
+            rootProject.layout.buildDirectory.asFile,
+            rootProject.layout.projectDirectory
+                .dir(".gradle/caches")
+                .asFile,
+            rootProject.layout.projectDirectory
+                .dir(".idea/caches")
+                .asFile,
+        ) as List<File>
+}
+
+abstract class ApkSizeTask : DefaultTask() {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val apkDir: DirectoryProperty
+
+    @TaskAction
+    fun printApkSizes() {
+        val dir = apkDir.asFile.get()
+        if (!dir.exists()) {
+            println("❌ No APKs found in $dir. Build first with ./gradlew assembleDebug or assembleRelease")
+            return
+        }
+
+        val format = DecimalFormat("#,##0.00")
+        dir
+            .walkTopDown()
+            .filter { it.isFile && it.extension == "apk" }
+            .forEach { apk ->
+                val sizeBytes = apk.length()
+                val sizeMB = sizeBytes.toDouble() / (1024 * 1024)
+                println("📦 APK: ${apk.name} → ${format.format(sizeMB)} MB")
+            }
     }
+}
+
+abstract class ModuleArtifactSizeTask : DefaultTask() {
+    @get:Input
+    abstract val moduleName: Property<String>
+
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val buildDirProperty: DirectoryProperty
+
+    @TaskAction
+    fun printArtifactSizes() {
+        val format = DecimalFormat("#,##0.00")
+        val module = moduleName.get()
+        val buildDir: File = buildDirProperty.asFile.get()
+
+        if (!buildDir.exists()) {
+            println("❌ No build directory found for module '$module': $buildDir")
+            return
+        }
+
+        // APKs
+        val apkFiles =
+            buildDir
+                .resolve("outputs/apk")
+                .takeIf { it.exists() }
+                ?.walkTopDown()
+                ?.filter { it.isFile && it.extension == "apk" }
+                ?.toList()
+                ?: emptyList()
+
+        // AARs (Android library)
+        val aarFiles =
+            buildDir.resolve("outputs/aar").listFiles { f -> f.isFile && f.extension == "aar" } ?: emptyArray()
+
+        // JARs (Java/Kotlin library)
+        val jarFiles = buildDir.resolve("libs").listFiles { f -> f.isFile && f.extension == "jar" } ?: emptyArray()
+
+        if (apkFiles.isEmpty() && aarFiles.isEmpty() && jarFiles.isEmpty()) {
+            println("⚠️ No APK, AAR, or JAR files found for module '$module'")
+            return
+        }
+
+        // Print APK sizes
+        apkFiles.forEach { apk ->
+            val sizeMB = apk.length().toDouble() / (1024 * 1024)
+            println("📦 [$module] APK: ${apk.name} → ${format.format(sizeMB)} MB")
+        }
+
+        // Print AAR sizes
+        aarFiles.forEach { aar ->
+            val sizeKB = aar.length().toDouble() / 1024
+            println("📦 [$module] AAR: ${aar.name} → ${format.format(sizeKB)} KB")
+        }
+
+        // Print JAR sizes
+        jarFiles.forEach { jar ->
+            val sizeKB = jar.length().toDouble() / 1024
+            println("📦 [$module] JAR: ${jar.name} → ${format.format(sizeKB)} KB")
+        }
+    }
+}
+
+tasks.register<ApkSizeTask>("apkSize") {
+    group = "reporting"
+    description = "Prints the size of the generated APK(s)."
+    apkDir.set(layout.buildDirectory.dir("outputs/apk"))
+}
+
+tasks.register("allArtifactsSize") {
+    group = "reporting"
+    description = "Prints sizes of all APKs, AARs, and JARs for all modules"
+
+    // Depends on all per-module size tasks
+    dependsOn(
+        subprojects.map { subproject ->
+            tasks.named<ModuleArtifactSizeTask>("${subproject.name}ArtifactSize")
+        },
+    )
 }

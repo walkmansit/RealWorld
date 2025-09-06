@@ -33,7 +33,7 @@
 }
 
 # Keep Application classes (entry point)
--keep class ** extends android.app.Application { *; }
+-keep class com.walkmansit.realworld.RealWorldApplication
 
 # Keep Activities, Fragments, Services, BroadcastReceivers (entry points)
 -keep class * extends android.app.Activity { *; }
