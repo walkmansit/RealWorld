@@ -32,10 +32,30 @@ android {
 //        buildConfigField("String", "API_KEY", "\"default_key\"")
     }
 
+    signingConfigs {
+        // Debug signing config (default generated keystore)
+        getByName("debug") {
+            // nothing to configure, Gradle already points it to ~/.android/debug.keystore
+        }
+    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
 //            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
+        }
+        create("prl") {
+            initWith(getByName("release")) // copy all release settings
+            signingConfig = signingConfigs.getByName("debug") // use debug signing
+            matchingFallbacks += listOf("release") // reuse release resources if needed
+
+            // Optional tweaks:
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
         release {
 //            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
