@@ -132,14 +132,14 @@ fun IntentReceiver<TagsIntent>.TagsViewContent(content: TagFields) {
         { showBottomSheet = true },
     )
 
-    val onHide =
-        coroutineScope
-            .launch { sheetState.hide() }
-            .invokeOnCompletion {
-                if (!sheetState.isVisible) {
-                    showBottomSheet = false
-                }
-            }
+//    val onHide =
+//        coroutineScope
+//            .launch { sheetState.hide() }
+//            .invokeOnCompletion {
+//                if (!sheetState.isVisible) {
+//                    showBottomSheet = false
+//                }
+//            }
 
     TagsBottomSheet(
         showBottomSheet,

@@ -1,6 +1,5 @@
 package com.walkmansit.realworld.data.di
 
-import android.util.Log
 import com.walkmansit.realworld.data.BuildConfig
 import com.walkmansit.realworld.data.api.ApiService
 import com.walkmansit.realworld.data.util.AuthInterceptor
@@ -43,7 +42,6 @@ object NetworkModule {
             .Builder()
             .client(okHttpClient)
             .baseUrl(BuildConfig.API_URL)
-            .also { Log.d("ApiService", "Base URL: ${BuildConfig.API_URL}") }
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)

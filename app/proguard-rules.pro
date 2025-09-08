@@ -46,7 +46,18 @@
 #########################################
 
 # Keep Compose runtime (needed for recomposition)
--keep class androidx.compose.** { *; }
+#-keep class androidx.compose.** { *; }
+# Keep only Composable methods (needed by Compose runtime)
+-keepclassmembers class * {
+    @androidx.compose.runtime.Composable <methods>;
+}
+
+# Keep Compose runtime internals needed for reflection (like Recomposer, SavedState)
+-keep class androidx.compose.runtime.** { *; }
+-keep class androidx.compose.ui.platform.** { *; }
+
+# Optional: keep Compose previews
+-keep class androidx.compose.ui.tooling.preview.** { *; }
 -dontwarn androidx.compose.**
 
 #########################################
@@ -84,3 +95,25 @@
     public static *** v(...);
     public static *** i(...);
 }
+
+# ---------------------------
+# Hilt / Dagger generated classes
+# ---------------------------
+
+# Keep all Dagger/Hilt internals
+-keep class dagger.** { *; }
+-keep class dagger.hilt.** { *; }
+-keep class dagger.hilt.internal.** { *; }
+-keep class javax.inject.** { *; }
+
+# Keep all generated *_Factory, *_Impl, *_MembersInjector classes
+-keep class *_Factory { *; }
+-keep class *_Impl { *; }
+-keep class *_MembersInjector { *; }
+
+# Keep all generated modules and @Provides methods
+-keep class *_Module { *; }
+-keep class *_Provides* { *; }
+
+# Optional: explicitly keep the DataModule DataStore factory
+-keep class com.walkmansit.realworld.data.di.DataModule_ProvidesPreferenceDataStoreFactory { *; }

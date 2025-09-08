@@ -29,6 +29,18 @@ android {
             isMinifyEnabled = false
 //            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
         }
+        create("prl") {
+            initWith(getByName("release")) // copy all release settings
+            matchingFallbacks += listOf("prl") // reuse release resources if needed
+
+            // Optional tweaks:
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+        }
+
         release {
 //            buildConfigField("String", "API_URL", "\"${project.properties["api.url"]}\"")
             isMinifyEnabled = true
