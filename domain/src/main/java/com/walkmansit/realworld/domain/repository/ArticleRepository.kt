@@ -3,9 +3,7 @@ package com.walkmansit.realworld.domain.repository
 import com.walkmansit.realworld.domain.model.Article
 import com.walkmansit.realworld.domain.model.ArticlesFilter
 import com.walkmansit.realworld.domain.model.EditArticle
-import com.walkmansit.realworld.domain.model.EditArticleFailed
 import com.walkmansit.realworld.domain.model.NewArticle
-import com.walkmansit.realworld.domain.model.NewArticleFailed
 import com.walkmansit.realworld.domain.model.RequestFailed
 import com.walkmansit.realworld.domain.util.Either
 
@@ -19,9 +17,9 @@ interface ArticleRepository {
     suspend fun updateArticle(
         editArticle: EditArticle,
         originalArticle: Article,
-    ): Either<EditArticleFailed, Article>
+    ): Either<RequestFailed, Article>
 
-    suspend fun createArticle(newArticle: NewArticle): Either<NewArticleFailed, Article>
+    suspend fun createArticle(newArticle: NewArticle): Either<RequestFailed, Article>
 
     suspend fun getTags(): Either<RequestFailed, List<String>>
 }

@@ -7,7 +7,6 @@ import com.walkmansit.realworld.domain.repository.AuthRepository
 import com.walkmansit.realworld.domain.repository.UserPreferencesRepository
 import com.walkmansit.realworld.domain.util.DispatcherProvider
 import com.walkmansit.realworld.domain.util.Either
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 

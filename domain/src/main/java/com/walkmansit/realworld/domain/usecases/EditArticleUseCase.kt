@@ -6,7 +6,6 @@ import com.walkmansit.realworld.domain.model.EditArticleFailed
 import com.walkmansit.realworld.domain.repository.ArticleRepository
 import com.walkmansit.realworld.domain.util.DispatcherProvider
 import com.walkmansit.realworld.domain.util.Either
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class EditArticleUseCase(
